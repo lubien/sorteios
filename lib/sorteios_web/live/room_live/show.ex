@@ -6,24 +6,26 @@ defmodule SorteiosWeb.RoomLive.Show do
 
   @impl true
   def mount(%{"id" => id}, session, socket) do
-    session |> IO.inspect(label: "#{__MODULE__}:#{__ENV__.line} #{DateTime.utc_now}", limit: :infinity)
     topic = "room:#{id}"
-    user_id = 1
 
     Presence.track(
       self(),
       topic,
-      user_id,
+      session["email"],
       %{
-        name: "lubien",
-        # email: current_user.email,
-        user_id: user_id
+        name: session["name"],
+        email: session["email"]
       }
     )
 
     SorteiosWeb.Endpoint.subscribe(topic)
 
-    {:ok, socket}
+    {:ok,
+      socket
+      |> assign(:id, id)
+      |> assign(:users, [])
+      |> reload_users()
+    }
   end
 
   @impl true
@@ -35,10 +37,23 @@ defmodule SorteiosWeb.RoomLive.Show do
   end
 
   def handle_info(%{event: "presence_diff"} = event, socket) do
-    event |> IO.inspect(label: "#{__MODULE__}:#{__ENV__.line} #{DateTime.utc_now}", limit: :infinity)
-    {:noreply, socket}
+    {:noreply, reload_users(socket)}
   end
 
   defp page_title(:show), do: "Show Room"
   defp page_title(:edit), do: "Edit Room"
+
+  defp topic(socket), do: "room:#{socket.assigns.id}"
+
+  def reload_users(socket) do
+    users =
+      Presence.list(topic(socket))
+      |> Enum.map(fn {_user_id, data} ->
+        data[:metas]
+        |> List.first()
+      end)
+
+    socket
+    |> assign(:users, users)
+  end
 end

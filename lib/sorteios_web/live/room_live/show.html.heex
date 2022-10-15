@@ -1,21 +1,7 @@
-<h1>Show Room</h1>
-
-<%= if @live_action in [:edit] do %>
-  <.modal return_to={Routes.room_show_path(@socket, :show, @room)}>
-    <.live_component
-      module={SorteiosWeb.RoomLive.FormComponent}
-      id={@room.id}
-      title={@page_title}
-      action={@live_action}
-      room={@room}
-      return_to={Routes.room_show_path(@socket, :show, @room)}
-    />
-  </.modal>
-<% end %>
+<h1>Sala <%= @id %></h1>
 
 <ul>
-
+  <%= for user <- @users do %>
+    <li><%= user.name %></li>
+  <% end %>
 </ul>
-
-<span><%= live_patch "Edit", to: Routes.room_show_path(@socket, :edit, @room), class: "button" %></span> |
-<span><%= live_redirect "Back", to: Routes.room_index_path(@socket, :index) %></span>
