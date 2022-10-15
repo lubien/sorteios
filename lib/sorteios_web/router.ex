@@ -17,8 +17,8 @@ defmodule SorteiosWeb.Router do
   scope "/", SorteiosWeb do
     pipe_through :browser
 
-    get "/", PageController, :index
-    live "/rooms", RoomLive.Index, :index
+    # get "/", PageController, :index
+    live "/", RoomLive.Index, :index
     live "/rooms/new", RoomLive.Index, :new
     live "/rooms/:id/edit", RoomLive.Index, :edit
 

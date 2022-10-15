@@ -40,6 +40,19 @@ defmodule SorteiosWeb.RoomLive.Index do
     {:noreply, assign(socket, :rooms, list_rooms())}
   end
 
+  def handle_event("create_room", _params, socket) do
+    case Rooms.create_room(%{}) do
+      {:ok, room} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, "Room created successfully")
+         |> push_redirect(to: Routes.room_show_path(socket, :show, room.id))}
+
+      # {:error, %Ecto.Changeset{} = changeset} ->
+      #   {:noreply, assign(socket, changeset: changeset)}
+    end
+  end
+
   defp list_rooms do
     Rooms.list_rooms()
   end
