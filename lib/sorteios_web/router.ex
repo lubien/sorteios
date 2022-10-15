@@ -17,15 +17,12 @@ defmodule SorteiosWeb.Router do
   scope "/", SorteiosWeb do
     pipe_through :browser
 
-    # get "/", PageController, :index
-    # live "/", RoomLive.Index, :index
-    live "/", RoomLive.Index, :new
+    get "/", UserController, :new
+    post "/", UserController, :create
     live "/rooms/:id/edit", RoomLive.Index, :edit
 
     live "/rooms/:id", RoomLive.Show, :show
     live "/rooms/:id/show/edit", RoomLive.Show, :edit
-
-    resources "/users", UserController
   end
 
   # Other scopes may use custom stacks.
