@@ -10,13 +10,12 @@ defmodule SorteiosWeb.UserController do
     render(conn, "new.html", changeset: changeset)
   end
 
-  # Quer entrar em uma sala
-  def create(conn, %{"user" => %{"room_id" => room_id} = user_params}) when room_id not in [""] do
+  def create(conn, %{"action" => "join_room", "user" => user_params}) do
     changeset = User.changeset(%User{}, user_params)
 
     room =
       try do
-        Rooms.get_room(room_id)
+        Rooms.get_room(user_params["room_id"])
       rescue
         Ecto.Query.CastError ->
           nil
@@ -25,7 +24,7 @@ defmodule SorteiosWeb.UserController do
     if room do
       case changeset do
         %Ecto.Changeset{valid?: true} ->
-          join_room(conn, room, user_params, true)
+          join_room(conn, room, user_params, false)
 
         changeset ->
           changeset = Map.put(changeset, :action, :save)
@@ -41,7 +40,6 @@ defmodule SorteiosWeb.UserController do
     end
   end
 
-  # Quer criar uma sala
   def create(conn, %{"user" => user_params}) do
     case User.changeset(%User{}, user_params) do
       %Ecto.Changeset{valid?: true} ->
