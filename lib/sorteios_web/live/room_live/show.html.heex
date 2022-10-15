@@ -1,5 +1,7 @@
 <h1>Sala <%= @id %></h1>
 
+Sou um admin? <%= inspect(@admin?) %>
+
 <ul>
   <%= for user <- @users do %>
     <li><%= user.name %></li>
