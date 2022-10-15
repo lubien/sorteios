@@ -78,33 +78,15 @@ defmodule SorteiosWeb.RoomLive.Show do
   end
 
   def handle_event("give_prize_to_random_person", _params, socket) do
-    prize =
+    available_prizes =
       socket.assigns.prizes
       |> Enum.filter(& &1.winner_name == nil)
-      |> List.first()
 
-    winner = socket.assigns.random_person
-
-    attrs = %{
-      winner_name: winner.name,
-      winner_email: winner.email
-    }
-    socket =
-      case Rooms.update_prize(prize, attrs) do
-        {:ok, prize} ->
-          PubSub.broadcast(Sorteios.PubSub, topic(socket), %{
-            event: "winner",
-            winner: winner,
-            prize: prize
-          })
-
-          socket
-          |> assign(:random_person, nil)
-
-        # todo: tratar o erro
-      end
-
-    {:noreply, socket}
+    if Enum.any?(available_prizes) do
+      {:noreply, award_prize(socket, List.first(available_prizes))}
+    else
+      {:noreply, put_flash(socket, :error, "Sem premios para sortear")}
+    end
   end
 
   @impl true
@@ -127,6 +109,29 @@ defmodule SorteiosWeb.RoomLive.Show do
   defp page_title(:edit), do: "Edit Room"
 
   defp topic(socket), do: "room:#{socket.assigns.id}"
+
+  def award_prize(socket, prize) do
+    winner = socket.assigns.random_person
+
+    attrs = %{
+      winner_name: winner.name,
+      winner_email: winner.email
+    }
+
+    case Rooms.update_prize(prize, attrs) do
+      {:ok, prize} ->
+        PubSub.broadcast(Sorteios.PubSub, topic(socket), %{
+          event: "winner",
+          winner: winner,
+          prize: prize
+        })
+
+        socket
+        |> assign(:random_person, nil)
+
+      # todo: tratar o erro
+    end
+  end
 
   def reload_prizes(socket) do
     socket
