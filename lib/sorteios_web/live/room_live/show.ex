@@ -9,6 +9,10 @@ defmodule SorteiosWeb.RoomLive.Show do
   @impl true
   def mount(%{"id" => id}, session, socket) do
     topic = "room:#{id}"
+    current_user = %{
+      name: session["name"],
+      email: session["email"]
+    }
 
     PubSub.subscribe(Sorteios.PubSub, topic)
 
@@ -16,21 +20,19 @@ defmodule SorteiosWeb.RoomLive.Show do
       self(),
       topic,
       session["email"],
-      %{
-        name: session["name"],
-        email: session["email"]
-      }
+      current_user
     )
 
     SorteiosWeb.Endpoint.subscribe(topic)
-
 
     {:ok,
       socket
       |> assign(:admin?, session["admin"] == id)
       |> assign(:id, id)
+      |> assign(:current_user, current_user)
       |> assign(:users, [])
       |> assign(:prizes, [])
+      |> assign(:random_person, nil)
       |> assign(:changeset, Rooms.change_prize(%Prize{}))
       |> reload_users()
       |> reload_prizes()
@@ -63,9 +65,59 @@ defmodule SorteiosWeb.RoomLive.Show do
     end
   end
 
+  def handle_event("pick_a_random_person", _params, socket) do
+    random_person =
+      socket.assigns.users
+      |> Enum.reject(& &1.email == socket.assigns.current_user.email)
+      |> Enum.random()
+
+    {:noreply,
+      socket
+      |> assign(:random_person, random_person)
+    }
+  end
+
+  def handle_event("give_prize_to_random_person", _params, socket) do
+    prize =
+      socket.assigns.prizes
+      |> Enum.filter(& &1.winner_name == nil)
+      |> List.first()
+
+    winner = socket.assigns.random_person
+
+    attrs = %{
+      winner_name: winner.name,
+      winner_email: winner.email
+    }
+    socket =
+      case Rooms.update_prize(prize, attrs) do
+        {:ok, prize} ->
+          PubSub.broadcast(Sorteios.PubSub, topic(socket), %{
+            event: "winner",
+            winner: winner,
+            prize: prize
+          })
+
+          socket
+          |> assign(:random_person, nil)
+
+        # todo: tratar o erro
+      end
+
+    {:noreply, socket}
+  end
+
   @impl true
   def handle_info(%{event: "presence_diff"}, socket) do
     {:noreply, reload_users(socket)}
+  end
+  def handle_info(%{event: "winner", winner: winner, prize: prize}, socket) do
+    socket =
+      socket
+      |> reload_prizes()
+      |> put_flash(:success, "#{winner.name} ganhou #{prize.name}")
+
+    {:noreply, socket}
   end
   def handle_info("reload_prizes", socket) do
     {:noreply, reload_prizes(socket)}

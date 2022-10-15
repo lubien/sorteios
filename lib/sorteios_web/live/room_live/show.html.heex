@@ -19,6 +19,21 @@ Sou um admin? <%= inspect(@admin?) %>
       <%= submit "Create prize", phx_disable_with: "Creating..." %>
     </div>
   </.form>
+
+
+  <hr class="my-2">
+
+  <h3>Gerenciamento do sorteio</h3>
+
+  <div>
+    <button phx-click="pick_a_random_person">Sortear pessoa</button>
+
+    <%= inspect(@random_person) %>
+
+    <%= if @random_person do %>
+      <button phx-click="give_prize_to_random_person" data-confirm="Tem certeza?">Premiar pessoa</button>
+    <% end %>
+  </div>
 <% end %>
 
 <hr class="my-2">
@@ -27,7 +42,14 @@ Sou um admin? <%= inspect(@admin?) %>
 
 <ul>
   <%= for prize <- @prizes do %>
-    <li><%= prize.name %></li>
+    <li>
+      <%= prize.name %>
+      <%= if prize.winner_name do %>
+        (Ganhador: <%= prize.winner_name %>)
+      <% else %>
+        (Sem ganhadores ainda)
+      <% end %>
+    </li>
   <% end %>
 </ul>
 
