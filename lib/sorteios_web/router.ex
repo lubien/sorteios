@@ -18,8 +18,8 @@ defmodule SorteiosWeb.Router do
     pipe_through :browser
 
     # get "/", PageController, :index
-    live "/", RoomLive.Index, :index
-    live "/rooms/new", RoomLive.Index, :new
+    # live "/", RoomLive.Index, :index
+    live "/", RoomLive.Index, :new
     live "/rooms/:id/edit", RoomLive.Index, :edit
 
     live "/rooms/:id", RoomLive.Show, :show
