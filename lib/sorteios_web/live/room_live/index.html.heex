@@ -1,0 +1,37 @@
+<h1>Listing Rooms</h1>
+
+<%= if @live_action in [:new, :edit] do %>
+  <.modal return_to={Routes.room_index_path(@socket, :index)}>
+    <.live_component
+      module={SorteiosWeb.RoomLive.FormComponent}
+      id={@room.id || :new}
+      title={@page_title}
+      action={@live_action}
+      room={@room}
+      return_to={Routes.room_index_path(@socket, :index)}
+    />
+  </.modal>
+<% end %>
+
+<table>
+  <thead>
+    <tr>
+
+      <th></th>
+    </tr>
+  </thead>
+  <tbody id="rooms">
+    <%= for room <- @rooms do %>
+      <tr id={"room-#{room.id}"}>
+
+        <td>
+          <span><%= live_redirect "Show", to: Routes.room_show_path(@socket, :show, room) %></span>
+          <span><%= live_patch "Edit", to: Routes.room_index_path(@socket, :edit, room) %></span>
+          <span><%= link "Delete", to: "#", phx_click: "delete", phx_value_id: room.id, data: [confirm: "Are you sure?"] %></span>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<span><%= live_patch "New Room", to: Routes.room_index_path(@socket, :new) %></span>
