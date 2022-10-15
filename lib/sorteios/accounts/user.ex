@@ -14,5 +14,13 @@ defmodule Sorteios.Accounts.User do
     user
     |> cast(attrs, [:name, :email])
     |> validate_required([:name, :email])
+    |> validate_format(:name, ~r/(\w.+\s).+/, message: "At least two names")
+    |> validate_email()
+  end
+
+  def validate_email(changeset) do
+    changeset
+    |> validate_required([:email])
+    |> validate_format(:email, ~r/^[^\s]+@[^\s]+$/, message: "must have the @ sign and no spaces")
   end
 end

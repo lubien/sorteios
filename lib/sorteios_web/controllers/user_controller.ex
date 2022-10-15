@@ -12,23 +12,59 @@ defmodule SorteiosWeb.UserController do
 
   # Quer entrar em uma sala
   def create(conn, %{"user" => %{"room_id" => room_id} = user_params}) when room_id not in [""] do
-    room = Rooms.get_room!(room_id)
+    changeset = User.changeset(%User{}, user_params)
 
-    conn
-    |> put_session("name", user_params["name"])
-    |> put_session("email", user_params["email"])
-    |> delete_session("admin")
-    |> redirect(to: Routes.room_show_path(conn, :show, room.id))
+    room =
+      try do
+        Rooms.get_room(room_id)
+      rescue
+        Ecto.Query.CastError ->
+          nil
+      end
+
+    if room do
+      case changeset do
+        %Ecto.Changeset{valid?: true} ->
+          join_room(conn, room, user_params, true)
+
+        changeset ->
+          changeset = Map.put(changeset, :action, :save)
+          render(conn, "new.html", changeset: changeset)
+      end
+    else
+      changeset =
+        changeset
+        |> Ecto.Changeset.add_error(:room_id, "Room not found")
+        |> Map.put(:action, :save)
+
+      render(conn, "new.html", changeset: changeset)
+    end
   end
 
   # Quer criar uma sala
   def create(conn, %{"user" => user_params}) do
-    {:ok, room} = Rooms.create_room(%{})
+    case User.changeset(%User{}, user_params) do
+      %Ecto.Changeset{valid?: true} ->
+        {:ok, room} = Rooms.create_room(%{})
+        join_room(conn, room, user_params, true)
+
+      changeset ->
+        changeset = Map.put(changeset, :action, :save)
+        render(conn, "new.html", changeset: changeset)
+    end
+  end
+
+  defp join_room(conn, room, params, admin?) do
+    conn =
+      if admin? do
+        put_session(conn, "admin", room.id)
+      else
+        delete_session(conn, "admin")
+      end
 
     conn
-    |> put_session("name", user_params["name"])
-    |> put_session("email", user_params["email"])
-    |> put_session("admin", room.id)
+    |> put_session("name", params["name"])
+    |> put_session("email", params["email"])
     |> redirect(to: Routes.room_show_path(conn, :show, room.id))
   end
 end
