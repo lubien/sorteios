@@ -2,6 +2,39 @@
 
 Sou um admin? <%= inspect(@admin?) %>
 
+<hr class="my-2">
+
+<%= if @admin? do %>
+  <.form
+    let={f}
+    for={@changeset}
+    id="prize-form"
+    phx-submit="create_prize">
+  
+    <%= label f, :name %>
+    <%= text_input f, :name %>
+    <%= error_tag f, :name %>
+  
+    <div>
+      <%= submit "Create prize", phx_disable_with: "Creating..." %>
+    </div>
+  </.form>
+<% end %>
+
+<hr class="my-2">
+
+<h3>Premios</h3>
+
+<ul>
+  <%= for prize <- @prizes do %>
+    <li><%= prize.name %></li>
+  <% end %>
+</ul>
+
+<hr class="my-2">
+
+<h3>Usuarios</h3>
+
 <ul>
   <%= for user <- @users do %>
     <li><%= user.name %></li>

@@ -2,6 +2,7 @@ defmodule SorteiosWeb.RoomLive.Show do
   use SorteiosWeb, :live_view
 
   alias Sorteios.Rooms
+  alias Sorteios.Rooms.Prize
   alias SorteiosWeb.Presence
 
   @impl true
@@ -25,7 +26,10 @@ defmodule SorteiosWeb.RoomLive.Show do
       |> assign(:admin?, session["admin"] == id)
       |> assign(:id, id)
       |> assign(:users, [])
+      |> assign(:prizes, [])
+      |> assign(:changeset, Rooms.change_prize(%Prize{}))
       |> reload_users()
+      |> reload_prizes()
     }
   end
 
@@ -37,6 +41,22 @@ defmodule SorteiosWeb.RoomLive.Show do
      |> assign(:room, Rooms.get_room!(id))}
   end
 
+  @impl true
+  def handle_event("create_prize", %{"prize" => prize_params}, socket) do
+    prize_params = Map.put(prize_params, "room_id", socket.assigns.id)
+
+    case Rooms.create_prize(prize_params) do
+      {:ok, _prize} ->
+        {:noreply,
+         socket
+         |> reload_prizes()
+         |> put_flash(:info, "Prize created successfully")}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, changeset: changeset)}
+    end
+  end
+
   def handle_info(%{event: "presence_diff"} = event, socket) do
     {:noreply, reload_users(socket)}
   end
@@ -45,6 +65,11 @@ defmodule SorteiosWeb.RoomLive.Show do
   defp page_title(:edit), do: "Edit Room"
 
   defp topic(socket), do: "room:#{socket.assigns.id}"
+
+  def reload_prizes(socket) do
+    socket
+    |> assign(:prizes, Rooms.list_prizes(socket.assigns.id))
+  end
 
   def reload_users(socket) do
     users =
