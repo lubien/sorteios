@@ -15,7 +15,8 @@ defmodule Sorteios.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: Sorteios.PubSub},
       # Start the Endpoint (http/https)
-      SorteiosWeb.Endpoint
+      SorteiosWeb.Endpoint,
+      SorteiosWeb.Presence
       # Start a worker by calling: Sorteios.Worker.start_link(arg)
       # {Sorteios.Worker, arg}
     ]
