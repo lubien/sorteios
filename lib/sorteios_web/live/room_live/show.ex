@@ -1,6 +1,7 @@
 defmodule SorteiosWeb.RoomLive.Show do
   use SorteiosWeb, :live_view
 
+  alias Phoenix.PubSub
   alias Sorteios.Rooms
   alias Sorteios.Rooms.Prize
   alias SorteiosWeb.Presence
@@ -8,6 +9,8 @@ defmodule SorteiosWeb.RoomLive.Show do
   @impl true
   def mount(%{"id" => id}, session, socket) do
     topic = "room:#{id}"
+
+    PubSub.subscribe(Sorteios.PubSub, topic)
 
     Presence.track(
       self(),
@@ -20,6 +23,7 @@ defmodule SorteiosWeb.RoomLive.Show do
     )
 
     SorteiosWeb.Endpoint.subscribe(topic)
+
 
     {:ok,
       socket
@@ -47,6 +51,8 @@ defmodule SorteiosWeb.RoomLive.Show do
 
     case Rooms.create_prize(prize_params) do
       {:ok, _prize} ->
+        PubSub.broadcast(Sorteios.PubSub, topic(socket), "reload_prizes")
+
         {:noreply,
          socket
          |> reload_prizes()
@@ -57,8 +63,12 @@ defmodule SorteiosWeb.RoomLive.Show do
     end
   end
 
-  def handle_info(%{event: "presence_diff"} = event, socket) do
+  @impl true
+  def handle_info(%{event: "presence_diff"}, socket) do
     {:noreply, reload_users(socket)}
+  end
+  def handle_info("reload_prizes", socket) do
+    {:noreply, reload_prizes(socket)}
   end
 
   defp page_title(:show), do: "Show Room"
