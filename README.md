@@ -1,5 +1,10 @@
 # Sorteios
 
+> Realtime prize drawing app built with ❤️ Phoenix
+
+![image](https://user-images.githubusercontent.com/9121359/196022769-b0af6585-e05c-4924-b749-a6219bf1f6ec.png)
+
+
 To start your Phoenix server:
 
   * Install dependencies with `mix deps.get`
