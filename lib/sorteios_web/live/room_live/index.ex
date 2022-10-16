@@ -48,8 +48,8 @@ defmodule SorteiosWeb.RoomLive.Index do
          |> put_flash(:info, "Room created successfully")
          |> push_redirect(to: Routes.room_show_path(socket, :show, room.id))}
 
-      # {:error, %Ecto.Changeset{} = changeset} ->
-      #   {:noreply, assign(socket, changeset: changeset)}
+        # {:error, %Ecto.Changeset{} = changeset} ->
+        #   {:noreply, assign(socket, changeset: changeset)}
     end
   end
 

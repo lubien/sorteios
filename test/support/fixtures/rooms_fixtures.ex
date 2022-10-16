@@ -10,9 +10,7 @@ defmodule Sorteios.RoomsFixtures do
   def room_fixture(attrs \\ %{}) do
     {:ok, room} =
       attrs
-      |> Enum.into(%{
-
-      })
+      |> Enum.into(%{})
       |> Sorteios.Rooms.create_room()
 
     room

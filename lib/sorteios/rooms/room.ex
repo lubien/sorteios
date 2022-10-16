@@ -5,8 +5,6 @@ defmodule Sorteios.Rooms.Room do
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "rooms" do
-
-
     timestamps()
   end
 
