@@ -120,7 +120,7 @@
   <div class="mt-6">
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <%= for user <- @users do %>
-        <.user_block user={user} show_email?={@admin?} />
+        <.user_block user={user} show_email?={@admin?} can_kick?={@admin? and user.email != @current_user.email} />
       <% end %>
     </div>
   </div>

@@ -93,6 +93,13 @@ defmodule SorteiosWeb.RoomLive.Show do
     end
   end
 
+  def handle_event("kick_person", %{"user-email" => user_email}, socket) do
+    PubSub.broadcast!(Sorteios.PubSub, topic(socket), %{
+      event: "kick",
+      email: user_email
+    })
+  end
+
   @impl true
   def handle_info(%{event: "presence_diff"}, socket) do
     {:noreply, reload_users(socket)}
@@ -109,6 +116,18 @@ defmodule SorteiosWeb.RoomLive.Show do
 
   def handle_info("reload_prizes", socket) do
     {:noreply, reload_prizes(socket)}
+  end
+
+  def handle_info(%{event: "kick", email: email}, socket) do
+    if (socket.assigns.current_user.email == email) do
+      socket =
+        socket
+        |> put_flash(:error, "You were kicked out of the room.")
+        |> redirect(to: Routes.session_path(socket, :new))
+      {:noreply, socket}
+    else
+      {:noreply, socket}
+    end
   end
 
   defp topic(%{assigns: %{room: room}}), do: topic(room)
@@ -175,20 +194,32 @@ defmodule SorteiosWeb.RoomLive.Show do
   end
 
   def user_block(assigns) do
+    can_kick? = Map.get(assigns, :can_kick?, false)
+
     ~H"""
     <div class="relative flex items-center space-x-3 rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 hover:border-gray-400">
       <div class="flex-shrink-0">
         <img class="h-10 w-10 rounded-full" src={gravatar(@user.email)} alt="" />
       </div>
       <div class="min-w-0 flex-1">
-        <a href="#" class="focus:outline-none">
-          <span class="absolute inset-0" aria-hidden="true"></span>
-          <p class="text-sm font-medium text-gray-900"><%= @user.name %></p>
-          <%= if @show_email? do %>
-            <p class="truncate text-sm text-gray-500"><%= @user.email %></p>
-          <% end %>
-        </a>
+        <p class="text-sm font-medium text-gray-900"><%= @user.name %></p>
+        <%= if @show_email? do %>
+          <p class="truncate text-sm text-gray-500"><%= @user.email %></p>
+        <% end %>
       </div>
+      <%= if can_kick? do %>
+        <div class="flex-shrink-0">
+          <button
+            phx-click="kick_person"
+            phx-value-user-email={@user.email}
+            data-confirm="Are you sure? This cannot be undone"
+            class="block w-full items-center justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:my-2 sm:w-auto sm:text-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      <% end %>
     </div>
     """
   end
