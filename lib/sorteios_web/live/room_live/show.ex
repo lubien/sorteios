@@ -178,7 +178,9 @@ defmodule SorteiosWeb.RoomLive.Show do
         <a href="#" class="focus:outline-none">
           <span class="absolute inset-0" aria-hidden="true"></span>
           <p class="text-sm font-medium text-gray-900"><%= @user.name %></p>
-          <p class="truncate text-sm text-gray-500"><%= @user.email %></p>
+          <%= if @show_email? do %>
+            <p class="truncate text-sm text-gray-500"><%= @user.email %></p>
+          <% end %>
         </a>
       </div>
     </div>

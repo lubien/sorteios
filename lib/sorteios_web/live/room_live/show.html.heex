@@ -46,8 +46,8 @@
                   </div>
                   <div class="hidden md:block">
                     <div>
-                      <p class="flex items-center text-sm text-gray-500">
-                        <%= if prize.winner_name do %>
+                      <%= if prize.winner_name do %>
+                        <p class="flex items-center text-sm text-gray-500">
                           <!-- Heroicon name: mini/check-circle -->
                           <svg
                             class="mr-1.5 h-5 w-5 flex-shrink-0 text-green-400"
@@ -63,27 +63,29 @@
                             />
                           </svg>
                           <%= prize.winner_name %>
-                        <% end %>
-                      </p>
-                      <p class="mt-2 text-sm text-gray-900 flex items-center">
-                        <%= if prize.winner_email do %>
-                          <!-- Heroicon name: mini/envelope -->
-                          <svg
-                            class="mr-1.5 h-5 w-5 flex-shrink-0 text-gray-400"
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                            aria-hidden="true"
-                          >
-                            <path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z" />
-                            <path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z" />
-                          </svg>
+                        </p>
+                        <%= if prize.winner_email != nil and @admin? do %>
+                          <p class="mt-2 text-sm text-gray-900 flex items-center">
+                            <!-- Heroicon name: mini/envelope -->
+                            <svg
+                              class="mr-1.5 h-5 w-5 flex-shrink-0 text-gray-400"
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                              aria-hidden="true"
+                            >
+                              <path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z" />
+                              <path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z" />
+                            </svg>
 
-                          <span class="truncate"><%= prize.winner_email %></span>
-                        <% else %>
-                          No winner yet
+                            <span class="truncate"><%= prize.winner_email %></span>
+                          </p>
                         <% end %>
-                      </p>
+                      <% else %>
+                        <p class="mt-2 text-sm text-gray-900 flex items-center">
+                          No winner yet
+                        </p>
+                      <% end %>
                     </div>
                   </div>
                 </div>
@@ -118,12 +120,12 @@
   <div class="mt-6">
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <%= for user <- @users do %>
-        <.user_block user={user} />
+        <.user_block user={user} show_email?={@admin?} />
       <% end %>
     </div>
   </div>
   <:right_side>
-    <.user_block user={@current_user} />
+    <.user_block user={@current_user} show_email?={true} />
   </:right_side>
   <:right_side>
     <section aria-labelledby="section-2-title">
@@ -213,7 +215,7 @@
               </button>
 
               <%= if @random_person do %>
-                <.user_block user={@random_person} />
+                <.user_block user={@random_person} show_email?={@admin?} />
                 <button
                   phx-click="give_prize_to_random_person"
                   data-confirm="Are you sure? This cannot be undone"
