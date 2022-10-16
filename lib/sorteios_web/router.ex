@@ -17,8 +17,8 @@ defmodule SorteiosWeb.Router do
   scope "/", SorteiosWeb do
     pipe_through :browser
 
-    get "/", UserController, :new
-    post "/", UserController, :create
+    get "/", SessionController, :new
+    post "/", SessionController, :create
     live "/rooms/:id", RoomLive.Show, :show
   end
 

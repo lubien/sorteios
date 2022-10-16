@@ -49,7 +49,7 @@ defmodule SorteiosWeb.RoomLive.Show do
     {:ok,
      socket
      |> put_flash(:info, "You need to specify your name and email to enter")
-     |> redirect(to: Routes.user_path(socket, :new, room_id: id))}
+     |> redirect(to: Routes.session_path(socket, :new, room_id: id))}
   end
 
   @impl true

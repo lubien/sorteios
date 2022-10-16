@@ -1,4 +1,4 @@
-<.form let={f} for={@changeset} action={Routes.user_path(@conn, :create)}>
+<.form let={f} for={@changeset} action={Routes.session_path(@conn, :create)}>
   <SorteiosWeb.Components.auth_layout>
     <div class="space-y-6">
       <%= if @changeset.action do %>

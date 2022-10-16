@@ -1,4 +1,4 @@
-defmodule SorteiosWeb.UserController do
+defmodule SorteiosWeb.SessionController do
   use SorteiosWeb, :controller
 
   alias Sorteios.Rooms
