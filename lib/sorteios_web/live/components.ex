@@ -53,6 +53,9 @@ defmodule SorteiosWeb.Components do
               &copy; <%= DateTime.utc_now().year %> Sorteios.
             </span>
             <span class="block sm:inline">Made by lubien.</span>
+            <span class="block sm:inline">
+              Region <%= System.get_env("FLY_REGION") || "local" %>.
+            </span>
           </div>
         </div>
       </footer>
