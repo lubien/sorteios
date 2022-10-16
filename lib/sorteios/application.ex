@@ -7,16 +7,19 @@ defmodule Sorteios.Application do
 
   @impl true
   def start(_type, _args) do
+    topologies = Application.get_env(:libcluster, :topologies) || []
+
     children = [
+      {Cluster.Supervisor, [topologies, [name: Sorteios.ClusterSupervisor]]},
       # Start the Ecto repository
       Sorteios.Repo,
       # Start the Telemetry supervisor
       SorteiosWeb.Telemetry,
       # Start the PubSub system
       {Phoenix.PubSub, name: Sorteios.PubSub},
+      SorteiosWeb.Presence,
       # Start the Endpoint (http/https)
-      SorteiosWeb.Endpoint,
-      SorteiosWeb.Presence
+      SorteiosWeb.Endpoint
       # Start a worker by calling: Sorteios.Worker.start_link(arg)
       # {Sorteios.Worker, arg}
     ]

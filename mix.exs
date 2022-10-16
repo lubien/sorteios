@@ -50,6 +50,7 @@ defmodule Sorteios.MixProject do
       {:jason, "~> 1.2"},
       {:tailwind, "~> 0.1", runtime: Mix.env() == :dev},
       {:eqrcode, "~> 0.1.10"},
+      {:libcluster, "~> 3.3"},
       {:plug_cowboy, "~> 2.5"}
     ]
   end

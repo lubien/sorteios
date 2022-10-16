@@ -53,7 +53,7 @@ defmodule SorteiosWeb.RoomLive.Show do
 
     case Rooms.create_prize(prize_params) do
       {:ok, _prize} ->
-        PubSub.broadcast(Sorteios.PubSub, topic(socket), "reload_prizes")
+        PubSub.broadcast!(Sorteios.PubSub, topic(socket), "reload_prizes")
 
         {:noreply,
          socket
@@ -118,7 +118,7 @@ defmodule SorteiosWeb.RoomLive.Show do
 
     case Rooms.update_prize(prize, attrs) do
       {:ok, prize} ->
-        PubSub.broadcast(Sorteios.PubSub, topic(socket), %{
+        PubSub.broadcast!(Sorteios.PubSub, topic(socket), %{
           event: "winner",
           winner: winner,
           prize: prize
