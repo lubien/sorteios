@@ -9,6 +9,7 @@ defmodule SorteiosWeb.RoomLive.Show do
   @impl true
   def mount(%{"id" => id}, session, socket) do
     topic = "room:#{id}"
+
     current_user = %{
       name: session["name"],
       email: session["email"]
@@ -26,17 +27,16 @@ defmodule SorteiosWeb.RoomLive.Show do
     SorteiosWeb.Endpoint.subscribe(topic)
 
     {:ok,
-      socket
-      |> assign(:admin?, session["admin"] == id)
-      |> assign(:id, id)
-      |> assign(:current_user, current_user)
-      |> assign(:users, [])
-      |> assign(:prizes, [])
-      |> assign(:random_person, nil)
-      |> assign(:changeset, Rooms.change_prize(%Prize{}))
-      |> reload_users()
-      |> reload_prizes()
-    }
+     socket
+     |> assign(:admin?, session["admin"] == id)
+     |> assign(:id, id)
+     |> assign(:current_user, current_user)
+     |> assign(:users, [])
+     |> assign(:prizes, [])
+     |> assign(:random_person, nil)
+     |> assign(:changeset, Rooms.change_prize(%Prize{}))
+     |> reload_users()
+     |> reload_prizes()}
   end
 
   @impl true
@@ -68,19 +68,18 @@ defmodule SorteiosWeb.RoomLive.Show do
   def handle_event("pick_a_random_person", _params, socket) do
     random_person =
       socket.assigns.users
-      |> Enum.reject(& &1.email == socket.assigns.current_user.email)
+      |> Enum.reject(&(&1.email == socket.assigns.current_user.email))
       |> Enum.random()
 
     {:noreply,
-      socket
-      |> assign(:random_person, random_person)
-    }
+     socket
+     |> assign(:random_person, random_person)}
   end
 
   def handle_event("give_prize_to_random_person", _params, socket) do
     available_prizes =
       socket.assigns.prizes
-      |> Enum.filter(& &1.winner_name == nil)
+      |> Enum.filter(&(&1.winner_name == nil))
 
     if Enum.any?(available_prizes) do
       {:noreply, award_prize(socket, List.first(available_prizes))}
@@ -93,6 +92,7 @@ defmodule SorteiosWeb.RoomLive.Show do
   def handle_info(%{event: "presence_diff"}, socket) do
     {:noreply, reload_users(socket)}
   end
+
   def handle_info(%{event: "winner", winner: winner, prize: prize}, socket) do
     socket =
       socket
@@ -101,6 +101,7 @@ defmodule SorteiosWeb.RoomLive.Show do
 
     {:noreply, socket}
   end
+
   def handle_info("reload_prizes", socket) do
     {:noreply, reload_prizes(socket)}
   end
@@ -129,7 +130,7 @@ defmodule SorteiosWeb.RoomLive.Show do
         socket
         |> assign(:random_person, nil)
 
-      # todo: tratar o erro
+        # todo: tratar o erro
     end
   end
 
@@ -148,5 +149,33 @@ defmodule SorteiosWeb.RoomLive.Show do
 
     socket
     |> assign(:users, users)
+  end
+
+  def gravatar(email) do
+    hash =
+      email
+      |> String.trim()
+      |> String.downcase()
+      |> :erlang.md5()
+      |> Base.encode16(case: :lower)
+
+    "https://www.gravatar.com/avatar/#{hash}?s=150&d=identicon"
+  end
+
+  def user_block(assigns) do
+    ~H"""
+    <div class="relative flex items-center space-x-3 rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 hover:border-gray-400">
+            <div class="flex-shrink-0">
+              <img class="h-10 w-10 rounded-full" src={gravatar(@user.email)} alt="" />
+            </div>
+            <div class="min-w-0 flex-1">
+              <a href="#" class="focus:outline-none">
+                <span class="absolute inset-0" aria-hidden="true"></span>
+                <p class="text-sm font-medium text-gray-900"><%= @user.name %></p>
+                <p class="truncate text-sm text-gray-500"><%= @user.email %></p>
+              </a>
+            </div>
+          </div>
+    """
   end
 end
