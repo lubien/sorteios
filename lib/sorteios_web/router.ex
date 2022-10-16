@@ -19,10 +19,7 @@ defmodule SorteiosWeb.Router do
 
     get "/", UserController, :new
     post "/", UserController, :create
-    live "/rooms/:id/edit", RoomLive.Index, :edit
-
     live "/rooms/:id", RoomLive.Show, :show
-    live "/rooms/:id/show/edit", RoomLive.Show, :edit
   end
 
   # Other scopes may use custom stacks.
