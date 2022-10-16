@@ -6,7 +6,10 @@ defmodule SorteiosWeb.UserController do
   alias Sorteios.Accounts.User
 
   def new(conn, _params) do
-    changeset = Accounts.change_user(%User{})
+    changeset = Accounts.change_user(%User{
+      name: get_session(conn, "name"),
+      email: get_session(conn, "email"),
+    })
     render(conn, "new.html", changeset: changeset)
   end
 
