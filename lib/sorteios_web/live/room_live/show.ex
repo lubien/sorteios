@@ -26,6 +26,11 @@ defmodule SorteiosWeb.RoomLive.Show do
 
     SorteiosWeb.Endpoint.subscribe(topic)
 
+    invite_image =
+      Routes.room_show_url(socket, :show, id)
+      |> EQRCode.encode()
+      |> EQRCode.svg(width: 240)
+
     {:ok,
      socket
      |> assign(:admin?, session["admin"] == id)
@@ -33,6 +38,7 @@ defmodule SorteiosWeb.RoomLive.Show do
      |> assign(:current_user, current_user)
      |> assign(:users, [])
      |> assign(:prizes, [])
+     |> assign(:invite_image, invite_image)
      |> assign(:random_person, nil)
      |> assign(:changeset, Rooms.change_prize(%Prize{}))
      |> reload_users()

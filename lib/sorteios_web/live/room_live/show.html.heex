@@ -95,7 +95,41 @@
   <:right_side>
     <.user_block user={@current_user} />
   </:right_side>
-  
+  <:right_side>
+    <section aria-labelledby="section-2-title">
+      <div class="overflow-hidden rounded-lg bg-white shadow">
+        <div class="p-6">
+          <div class="px-4 pb-5">
+            <h3 class="text-lg font-medium leading-6 text-gray-900">Invite people</h3>
+
+            <div class="mt-5 mb-2 sm:flex sm:items-center">
+              <div class="w-full sm:max-w-xs">
+                <input
+                  id="invite-link"
+                  type="text"
+                  value={Routes.room_show_url(@socket, :show, @id)}
+                  class="block w-full rounded-md bg-gray-300 border-gray-400 shadow-sm sm:text-sm"
+                />
+              </div>
+
+              <button
+                id="copy-to-clipboard"
+                phx-hook="CopyToClipboard"
+                data-input-selector="#invite-link"
+                class="mt-3 inline-flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+              >
+                Copy
+              </button>
+            </div>
+
+            <div class="flex place-content-center">
+              <%= {:safe, @invite_image} %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </:right_side>
   <:right_side>
     <%= if @admin? do %>
       <section aria-labelledby="section-2-title">
