@@ -19,15 +19,7 @@ defmodule SorteiosWeb.SessionController do
   def create(conn, %{"action" => "join_room", "user" => user_params}) do
     changeset = User.changeset(%User{}, user_params)
 
-    room =
-      try do
-        Rooms.get_room(user_params["room_id"])
-      rescue
-        Ecto.Query.CastError ->
-          nil
-      end
-
-    if room do
+    if room = Rooms.get_room(user_params["room_id"]) do
       case changeset do
         %Ecto.Changeset{valid?: true} ->
           join_room(conn, room, user_params, false)

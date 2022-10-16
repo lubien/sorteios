@@ -37,7 +37,14 @@ defmodule Sorteios.Rooms do
   """
   def get_room!(id), do: Repo.get!(Room, id)
 
-  def get_room(id), do: Repo.get(Room, id)
+  def get_room(id) do
+    try do
+      Repo.get(Room, id)
+    rescue
+      Ecto.Query.CastError ->
+        nil
+    end
+  end
 
   @doc """
   Creates a room.

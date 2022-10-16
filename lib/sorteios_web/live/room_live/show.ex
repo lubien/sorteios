@@ -3,41 +3,48 @@ defmodule SorteiosWeb.RoomLive.Show do
 
   alias Phoenix.PubSub
   alias Sorteios.Rooms
+  alias Sorteios.Rooms.Room
   alias Sorteios.Rooms.Prize
   alias SorteiosWeb.Presence
 
   @impl true
   def mount(%{"id" => id}, %{"name" => name, "email" => email} = session, socket) do
-    topic = "room:#{id}"
+    if room = Rooms.get_room(id) do
+      current_user = %{
+        name: name,
+        email: email
+      }
 
-    current_user = %{
-      name: name,
-      email: email
-    }
+      PubSub.subscribe(Sorteios.PubSub, topic(room))
+      {:ok, _} = Presence.track(self(), topic(room), email, current_user)
 
-    PubSub.subscribe(Sorteios.PubSub, topic)
-    {:ok, _} = Presence.track(self(), topic, email, current_user)
+      SorteiosWeb.Endpoint.subscribe(topic(room))
 
-    SorteiosWeb.Endpoint.subscribe(topic)
+      invite_image =
+        Routes.room_show_url(socket, :show, id)
+        |> EQRCode.encode()
+        |> EQRCode.svg(width: 240)
 
-    invite_image =
-      Routes.room_show_url(socket, :show, id)
-      |> EQRCode.encode()
-      |> EQRCode.svg(width: 240)
-
-    {:ok,
-     socket
-     |> assign(:page_title, "Room #{id}")
-     |> assign(:admin?, session["admin:#{id}"] == id)
-     |> assign(:id, id)
-     |> assign(:current_user, current_user)
-     |> assign(:users, [])
-     |> assign(:prizes, [])
-     |> assign(:invite_image, invite_image)
-     |> assign(:random_person, nil)
-     |> assign(:changeset, Rooms.change_prize(%Prize{}))
-     |> reload_users()
-     |> reload_prizes()}
+      {:ok,
+       socket
+       |> assign(:page_title, "Room #{id}")
+       |> assign(:admin?, session["admin:#{id}"] == id)
+       |> assign(:id, id)
+       |> assign(:room, room)
+       |> assign(:current_user, current_user)
+       |> assign(:users, [])
+       |> assign(:prizes, [])
+       |> assign(:invite_image, invite_image)
+       |> assign(:random_person, nil)
+       |> assign(:changeset, Rooms.change_prize(%Prize{}))
+       |> reload_users()
+       |> reload_prizes()}
+    else
+      {:ok,
+       socket
+       |> put_flash(:error, "Room not found")
+       |> redirect(to: Routes.session_path(socket, :new))}
+    end
   end
 
   def mount(%{"id" => id}, _session, socket) do
@@ -106,7 +113,8 @@ defmodule SorteiosWeb.RoomLive.Show do
     {:noreply, reload_prizes(socket)}
   end
 
-  defp topic(socket), do: "room:#{socket.assigns.id}"
+  defp topic(%{assigns: %{room: room}}), do: topic(room)
+  defp topic(%Room{id: id}), do: "room:#{id}"
 
   def award_prize(socket, prize) do
     winner = socket.assigns.random_person
