@@ -16,13 +16,7 @@ defmodule SorteiosWeb.RoomLive.Show do
     }
 
     PubSub.subscribe(Sorteios.PubSub, topic)
-
-    Presence.track(
-      self(),
-      topic,
-      session["email"],
-      current_user
-    )
+    {:ok, _} = Presence.track(self(), topic , email, current_user)
 
     SorteiosWeb.Endpoint.subscribe(topic)
 
