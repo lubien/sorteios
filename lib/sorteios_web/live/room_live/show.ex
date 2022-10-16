@@ -84,9 +84,7 @@ defmodule SorteiosWeb.RoomLive.Show do
   end
 
   def handle_event("give_prize_to_random_person", _params, socket) do
-    available_prizes =
-      socket.assigns.prizes
-      |> Enum.filter(&(&1.winner_name == nil))
+    available_prizes = socket.assigns.available_prizes
 
     if Enum.any?(available_prizes) do
       {:noreply, award_prize(socket, List.first(available_prizes))}
@@ -142,6 +140,7 @@ defmodule SorteiosWeb.RoomLive.Show do
   def reload_prizes(socket) do
     socket
     |> assign(:prizes, Rooms.list_prizes(socket.assigns.id))
+    |> filter_available_prizes()
   end
 
   def reload_users(socket) do
@@ -154,6 +153,13 @@ defmodule SorteiosWeb.RoomLive.Show do
 
     socket
     |> assign(:users, users)
+  end
+
+  def filter_available_prizes(socket) do
+    prizes = socket.assigns.prizes
+
+    socket
+    |> assign(:available_prizes, Enum.filter(prizes, &(&1.winner_name == nil)))
   end
 
   def gravatar(email) do
