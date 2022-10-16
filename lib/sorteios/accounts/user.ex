@@ -5,6 +5,7 @@ defmodule Sorteios.Accounts.User do
   schema "users" do
     field :email, :string
     field :name, :string
+    field :room_id, :string
 
     timestamps()
   end

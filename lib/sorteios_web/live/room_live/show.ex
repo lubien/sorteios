@@ -7,12 +7,12 @@ defmodule SorteiosWeb.RoomLive.Show do
   alias SorteiosWeb.Presence
 
   @impl true
-  def mount(%{"id" => id}, session, socket) do
+  def mount(%{"id" => id}, %{"name" => name, "email" => email} = session, socket) do
     topic = "room:#{id}"
 
     current_user = %{
-      name: session["name"],
-      email: session["email"]
+      name: name,
+      email: email
     }
 
     PubSub.subscribe(Sorteios.PubSub, topic)
@@ -43,6 +43,14 @@ defmodule SorteiosWeb.RoomLive.Show do
      |> assign(:changeset, Rooms.change_prize(%Prize{}))
      |> reload_users()
      |> reload_prizes()}
+  end
+
+  def mount(%{"id" => id}, _session, socket) do
+    {:ok,
+      socket
+      |> put_flash(:info, "You need to specify your name and email to enter")
+      |> redirect(to: Routes.user_path(socket, :new, room_id: id))
+    }
   end
 
   @impl true

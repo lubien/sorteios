@@ -30,7 +30,22 @@
       </div>
 
       <div>
-        <%= submit("Create new room",
+        <%= label(f, :room_id, "Room ID (if you want to join)",
+          class: "block text-sm font-medium text-gray-700"
+        ) %>
+        <div class="mt-1">
+          <%= text_input(f, :room_id,
+            class:
+              "block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+          ) %>
+        </div>
+        <%= error_tag(f, :room_id) %>
+      </div>
+
+      <div>
+        <%= submit("Join room",
+          name: "action",
+          value: "join_room",
           class:
             "flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
         ) %>
@@ -42,25 +57,12 @@
             <div class="w-full border-t border-gray-300"></div>
           </div>
           <div class="relative flex justify-center text-sm">
-            <span class="bg-white px-2 text-gray-500">Or join a room</span>
+            <span class="bg-white px-2 text-gray-500">Or create a room</span>
           </div>
-        </div>
-
-        <div>
-          <%= label(f, :room_id, "Room ID", class: "block text-sm font-medium text-gray-700") %>
-          <div class="mt-1">
-            <%= text_input(f, :room_id,
-              class:
-                "block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-            ) %>
-          </div>
-          <%= error_tag(f, :room_id) %>
         </div>
 
         <div class="mt-6">
-          <%= submit("Join room",
-            name: "action",
-            value: "join_room",
+          <%= submit("Create new room",
             class:
               "flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           ) %>
