@@ -9,7 +9,7 @@ processes = []
   release_command = "/app/bin/migrate"
 
 [env]
-  PHX_HOST = "sorteios.fly.dev"
+  PHX_HOST = "sorteios.lubien.dev"
   PORT = "8080"
 
 [experimental]
