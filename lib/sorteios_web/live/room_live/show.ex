@@ -27,6 +27,7 @@ defmodule SorteiosWeb.RoomLive.Show do
 
     {:ok,
      socket
+     |> assign(:page_title, "Room #{id}")
      |> assign(:admin?, session["admin:#{id}"] == id)
      |> assign(:id, id)
      |> assign(:current_user, current_user)
@@ -44,14 +45,6 @@ defmodule SorteiosWeb.RoomLive.Show do
      socket
      |> put_flash(:info, "You need to specify your name and email to enter")
      |> redirect(to: Routes.session_path(socket, :new, room_id: id))}
-  end
-
-  @impl true
-  def handle_params(%{"id" => id}, _, socket) do
-    {:noreply,
-     socket
-     |> assign(:page_title, page_title(socket.assigns.live_action))
-     |> assign(:room, Rooms.get_room!(id))}
   end
 
   @impl true
@@ -112,9 +105,6 @@ defmodule SorteiosWeb.RoomLive.Show do
   def handle_info("reload_prizes", socket) do
     {:noreply, reload_prizes(socket)}
   end
-
-  defp page_title(:show), do: "Show Room"
-  defp page_title(:edit), do: "Edit Room"
 
   defp topic(socket), do: "room:#{socket.assigns.id}"
 
