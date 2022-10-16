@@ -33,7 +33,7 @@ defmodule SorteiosWeb.RoomLive.Show do
 
     {:ok,
      socket
-     |> assign(:admin?, session["admin"] == id)
+     |> assign(:admin?, session["admin:#{id}"] == id)
      |> assign(:id, id)
      |> assign(:current_user, current_user)
      |> assign(:users, [])

@@ -56,11 +56,13 @@ defmodule SorteiosWeb.UserController do
   end
 
   defp join_room(conn, room, params, admin?) do
+    key = "admin:#{room.id}"
+
     conn =
       if admin? do
-        put_session(conn, "admin", room.id)
+        put_session(conn, key, room.id)
       else
-        delete_session(conn, "admin")
+        delete_session(conn, key)
       end
 
     conn
