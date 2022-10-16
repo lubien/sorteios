@@ -151,6 +151,7 @@ defmodule SorteiosWeb.RoomLive.Show do
         data[:metas]
         |> List.first()
       end)
+      |> Enum.dedup_by(& &1[:email])
 
     socket
     |> assign(:users, users)
