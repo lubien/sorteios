@@ -31,10 +31,10 @@ const hooks = {
       const { inputSelector } = this.el.dataset;
       this.el.addEventListener("click", (ev) => {
         ev.preventDefault();
-        const $targetInput = document.querySelector(inputSelector);
-        $targetInput.select();
-        $targetInput.setSelectionRange(0, 99999);
-        navigator.clipboard.writeText($targetInput.value);
+        const targetInput = document.querySelector(inputSelector);
+        targetInput.select();
+        targetInput.setSelectionRange(0, 99999);
+        navigator.clipboard.writeText(targetInput.value);
       });
     },
   }
