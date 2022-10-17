@@ -143,6 +143,14 @@ defmodule SorteiosWeb.RoomLive.Show do
     |> filter_available_prizes()
   end
 
+  def compute_chance(users_length) do
+    if users_length > 0 do
+      100/users_length
+    else
+      0.0
+    end
+  end
+
   def reload_users(socket) do
     users =
       Presence.list(topic(socket))
@@ -152,8 +160,13 @@ defmodule SorteiosWeb.RoomLive.Show do
       end)
       |> Enum.dedup_by(& &1[:email])
 
+    eligible_users_count = length(users) - 1
+    winning_chance = compute_chance(eligible_users_count)
+
     socket
     |> assign(:users, users)
+    |> assign(:eligible_users_count, eligible_users_count)
+    |> assign(:winning_chance, winning_chance)
   end
 
   def filter_available_prizes(socket) do
