@@ -208,8 +208,8 @@
               <h3 class="text-lg font-medium leading-6 text-gray-900">Prize drawing</h3>
 
               <%= if Enum.any?(@available_prizes) do %>
-                <p class="text-sm font-medium text-gray-900">Eligible users: <%= @eligible_users %></p>
-                <p class="text-sm font-medium text-gray-900">Chances: <%= :erlang.float_to_binary(@chance, [decimals: 2]) %>%</p>
+                <p class="text-sm font-medium text-gray-900">Eligible users: <%= @eligible_users_count %></p>
+                <p class="text-sm font-medium text-gray-900">Chances: <%= :erlang.float_to_binary(@winning_chance, [decimals: 2]) %>%</p>
                 <button
                   phx-click="pick_a_random_person"
                   class="block w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:my-2 sm:w-auto sm:text-sm"

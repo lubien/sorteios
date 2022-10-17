@@ -160,13 +160,13 @@ defmodule SorteiosWeb.RoomLive.Show do
       end)
       |> Enum.dedup_by(& &1[:email])
 
-    eligible_users = length(users) - 1
-    chance = compute_chance(eligible_users)
+    eligible_users_count = length(users) - 1
+    winning_chance = compute_chance(eligible_users_count)
 
     socket
     |> assign(:users, users)
-    |> assign(:eligible_users, eligible_users)
-    |> assign(:chance, chance)
+    |> assign(:eligible_users_count, eligible_users_count)
+    |> assign(:winning_chance, winning_chance)
   end
 
   def filter_available_prizes(socket) do
