@@ -155,7 +155,7 @@
             </div>
 
             <div class="flex place-content-center">
-              <%= {:safe, @invite_image} %>
+              <%= link {:safe, @invite_image}, to: Routes.export_path(@socket, :create_qr_code, @id) %>
             </div>
           </div>
         </div>
