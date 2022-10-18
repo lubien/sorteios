@@ -19,6 +19,7 @@ defmodule SorteiosWeb.Router do
 
     get "/", SessionController, :new
     post "/", SessionController, :create
+    get "/qr_code/:room_id", ExportController, :create_qr_code
     live "/rooms/:id", RoomLive.Show, :show
   end
 
