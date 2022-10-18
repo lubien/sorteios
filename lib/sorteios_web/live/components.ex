@@ -97,6 +97,33 @@ defmodule SorteiosWeb.Components do
         </div>
       </div>
     </div>
+
+    <footer>
+      <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
+        <div class="border-t border-gray-200 py-8 text-center text-sm text-gray-500">
+          <span class="block sm:inline">
+            &copy; <%= DateTime.utc_now().year %> Sorteios.
+          </span>
+          <span class="block sm:inline">
+            Made by <a
+              href="https://github.com/lubien"
+              target="_blank"
+              class="text-purple-500 hover:text-purple-700"
+            >Lubien</a>.
+          </span>
+          <span class="block sm:inline">
+            <a
+              href="https://github.com/lubien/sorteios"
+              target="_blank"
+              class="text-purple-500 hover:text-purple-700"
+            >GitHub Repo</a>.
+          </span>
+          <span class="block sm:inline">
+            Region <%= System.get_env("FLY_REGION") || "local" %>.
+          </span>
+        </div>
+      </div>
+    </footer>
     """
   end
 end
