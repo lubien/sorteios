@@ -19,6 +19,8 @@ defmodule SorteiosWeb.Router do
 
     get "/", SessionController, :new
     post "/", SessionController, :create
+    delete "/logout", SessionController, :delete
+
     live "/rooms/:id", RoomLive.Show, :show
   end
 

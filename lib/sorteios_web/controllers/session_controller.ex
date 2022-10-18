@@ -50,6 +50,12 @@ defmodule SorteiosWeb.SessionController do
     end
   end
 
+  def delete(conn, _) do
+    conn
+    |> configure_session(drop: true)
+    |> redirect(to: "/")
+  end
+
   defp join_room(conn, room, params, admin?) do
     key = "admin:#{room.id}"
 

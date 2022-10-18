@@ -1,5 +1,5 @@
 defmodule SorteiosWeb.Components do
-  use Phoenix.Component
+  use SorteiosWeb, :component
 
   def two_columns_layout(assigns) do
     ~H"""
@@ -21,7 +21,9 @@ defmodule SorteiosWeb.Components do
               </a>
             </div>
             <!-- Right section on desktop -->
-            <div class="hidden lg:ml-4 lg:flex lg:items-center lg:pr-0.5"></div>
+            <div class="hidden lg:ml-4 lg:flex lg:items-center lg:pr-0.5">
+              <%= link "Logout", to: "/logout", method: :delete, class: "mt-3 inline-flex w-full items-center justify-center rounded-md border border-white bg-indigo-600 px-4 py-2 font-medium text-white shadow-sm hover:bg-indigo-700 hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm" %>
+            </div>
           </div>
           <div class="hidden border-t border-white border-opacity-20 py-5 lg:block">
             <div class="grid grid-cols-3 items-center gap-8">
