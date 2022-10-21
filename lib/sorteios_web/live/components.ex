@@ -46,7 +46,7 @@ defmodule SorteiosWeb.Components do
           </div>
         </div>
       </main>
-      <%= footer(assigns, "sm:text-left") %>
+      <%= common_footer(assigns, "sm:text-left") %>
     </div>
     """
   end
@@ -73,11 +73,11 @@ defmodule SorteiosWeb.Components do
       </div>
     </div>
 
-    <%= footer(assigns, "") %>
+    <%= common_footer(assigns, "") %>
     """
   end
 
-  def footer(assigns, class) do
+  def common_footer(assigns, class) do
     ~H"""
     <footer>
       <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
