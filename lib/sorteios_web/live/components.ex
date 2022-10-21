@@ -46,7 +46,7 @@ defmodule SorteiosWeb.Components do
           </div>
         </div>
       </main>
-      <%= common_footer(assigns, "sm:text-left") %>
+      <.common_footer class="sm:text-left"/>
     </div>
     """
   end
@@ -73,15 +73,15 @@ defmodule SorteiosWeb.Components do
       </div>
     </div>
 
-    <%= common_footer(assigns, "") %>
+    <.common_footer class=""/>
     """
   end
 
-  def common_footer(assigns, class) do
+  def common_footer(assigns) do
     ~H"""
     <footer>
       <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
-        <div class={["border-t border-gray-200 py-8 text-sm text-center text-gray-500", class]}>
+        <div class={["border-t border-gray-200 py-8 text-sm text-center text-gray-500", @class]}>
           <span class="block sm:inline">
             &copy; <%= DateTime.utc_now().year %> Sorteios.
           </span>
