@@ -52,7 +52,8 @@ defmodule SorteiosWeb.SessionController do
 
   def delete(conn, _) do
     conn
-    |> configure_session(drop: true)
+    |> configure_session(renew: true)
+    |> clear_session()
     |> redirect(to: "/")
   end
 
