@@ -72,6 +72,26 @@ defmodule SorteiosWeb.RoomLive.Show do
     end
   end
 
+  def handle_event("remove_prize", %{"prize-name" => prize_name}, socket) do
+    prize =
+      socket.assigns.available_prizes
+      |> Enum.filter(&(&1.name == prize_name))
+      |> List.first()
+
+    case Rooms.delete_prize(prize) do
+      {:ok, _prize} ->
+        PubSub.broadcast!(Sorteios.PubSub, topic(socket), "reload_prizes")
+
+        {:noreply,
+         socket
+         |> reload_prizes()
+         |> put_flash(:info, "Prize removed successfully")}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, changeset: changeset)}
+    end
+  end
+
   def handle_event("pick_a_random_person", _params, socket) do
     random_person =
       socket.assigns.users
