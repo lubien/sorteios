@@ -1,6 +1,6 @@
 <p align="center">
-<a href="https://simpleicons.org/">
-  <img src="priv/static/images/sorteio-logo.svg" alt="Simple Icons" width=64 height=64>
+<a href="https://sorteios.lubien.dev/">
+  <img src="priv/static/images/sorteio-logo.svg" alt="Sorteios" width=64 height=64>
 </a>
 <h1 align="center">Sorteios</h1>
 
