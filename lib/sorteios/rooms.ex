@@ -125,6 +125,7 @@ defmodule Sorteios.Rooms do
   def list_prizes(room_id) do
     Prize
     |> where(room_id: ^room_id)
+    |> order_by(asc: :winner_name, asc: :inserted_at)
     |> Repo.all()
   end
 
