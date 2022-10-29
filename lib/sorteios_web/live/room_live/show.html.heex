@@ -33,11 +33,16 @@
             <div class="flex items-center px-4 py-4 sm:px-6">
               <div class="flex min-w-0 flex-1 items-center">
                 <div class="flex-shrink-0">
-                  <img
-                    class="h-12 w-12 rounded-full"
-                    src={gravatar(prize.winner_email || "")}
-                    alt=""
-                  />
+                  <%= if prize.winner_name do %>
+                    <img
+                      class="h-12 w-12 rounded-full"
+                      src={gravatar(prize.winner_email || "")}
+                      alt=""
+                    />
+                  <% else %>
+                    <div class="h-12 w-12 rounded-full bg-gray-200 border-2 border-gray-400 border-dotted">
+                    </div>
+                  <% end %>
                 </div>
                 <div class="min-w-0 flex-1 px-4 md:grid md:grid-cols-2 md:gap-4 items-center">
                   <div>
