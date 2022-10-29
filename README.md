@@ -1,4 +1,9 @@
-# Sorteios
+<p align="center">
+<a href="https://simpleicons.org/">
+  <img src="priv/static/images/sorteio-logo.svg" alt="Simple Icons" width=64 height=64>
+</a>
+<h1 align="center">Sorteios</h1>
+
 
 > Realtime prize drawing app built with ❤️ Phoenix
 
