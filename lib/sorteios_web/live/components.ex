@@ -12,7 +12,7 @@ defmodule SorteiosWeb.Components do
               <a href="/" class="flex">
                 <img
                   class="h-8 w-auto"
-                  src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=300"
+                  src={Routes.static_path(SorteiosWeb.Endpoint, "/images/sorteio-logo-white.svg")}
                   alt="Sorteios"
                 />
                 <h2 class="ml-2 text-2xl font-bold leading-7 text-white sm:truncate sm:text-3xl sm:tracking-tight">
