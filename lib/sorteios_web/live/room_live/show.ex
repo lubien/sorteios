@@ -15,6 +15,9 @@ defmodule SorteiosWeb.RoomLive.Show do
         email: email
       }
 
+
+      {:ok, _participant} = Rooms.create_participant(Map.put(current_user, :room_id, id))
+
       PubSub.subscribe(Sorteios.PubSub, topic(room))
       {:ok, _} = Presence.track(self(), topic(room), email, current_user)
 
@@ -173,12 +176,7 @@ defmodule SorteiosWeb.RoomLive.Show do
 
   def reload_users(socket) do
     users =
-      Presence.list(topic(socket))
-      |> Enum.map(fn {_user_id, data} ->
-        data[:metas]
-        |> List.first()
-      end)
-      |> Enum.dedup_by(& &1[:email])
+      Rooms.list_participants_for_room(socket.assigns.id)
 
     eligible_users_count = length(users) - 1
     winning_chance = compute_chance(eligible_users_count)
