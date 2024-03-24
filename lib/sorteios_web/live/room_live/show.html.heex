@@ -216,7 +216,7 @@
                   Draw random person
                 </button>
                 
-                <%= if @loading do %>
+                <%= if @loading_winner? do %>
                   <div class="loader">Loading...</div>
                 <% end %>
                 
@@ -229,17 +229,15 @@
                 </button>
               <% end %>
 
-              <%= if @random_person do %>
-                <%= if @loading == false do %>
-                  <.user_block user={@random_person} show_email?={@admin?} />
-                  <button
-                    phx-click="give_prize_to_random_person"
-                    data-confirm="Are you sure? This cannot be undone"
-                    class="block w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:my-2 sm:w-auto sm:text-sm"
-                  >
-                    Give them the next prize
-                  </button>
-                <% end %>
+              <%= if @random_person && !@loading_winner? do %>
+                <.user_block user={@random_person} show_email?={@admin?} />
+                <button
+                  phx-click="give_prize_to_random_person"
+                  data-confirm="Are you sure? This cannot be undone"
+                  class="block w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:my-2 sm:w-auto sm:text-sm"
+                >
+                  Give them the next prize
+                </button>
               <% end %>
             </div>
           </div>

@@ -28,7 +28,6 @@ defmodule SorteiosWeb.RoomLive.Show do
         |> EQRCode.encode()
         |> EQRCode.svg(width: 240)
 
-
        socket =
         assign(
             socket,
@@ -37,7 +36,7 @@ defmodule SorteiosWeb.RoomLive.Show do
             id: id,
             room: room,
             current_user: current_user,
-            loading: false,
+            loading_winner?: false,
             users: [],
             prizes: [],
             invite_image: invite_image,
@@ -103,24 +102,20 @@ defmodule SorteiosWeb.RoomLive.Show do
     end
   end
 
-
   def handle_event("pick_a_random_person", _params, socket) do
-
-    send(self(), :run_search)
+    Process.send_after(self(), :run_search, 3000)
 
     socket =
       assign(
         socket,
         randon_person: [],
-        loading: true
+        loading_winner?: true
       )
 
     {:noreply, socket}
   end
 
   def handle_info(:run_search, socket) do
-    Process.sleep(5000)
-
     random_person =
       socket.assigns.users
       |> Enum.reject(&(&1.email == socket.assigns.current_user.email))
@@ -130,13 +125,11 @@ defmodule SorteiosWeb.RoomLive.Show do
       assign(
         socket,
         random_person: random_person,
-        loading: false
+        loading_winner?: false
       )
 
     {:noreply, socket}
   end
-
-
 
   def handle_event("give_prize_to_random_person", _params, socket) do
     available_prizes = socket.assigns.available_prizes
