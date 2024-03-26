@@ -28,20 +28,27 @@ defmodule SorteiosWeb.RoomLive.Show do
         |> EQRCode.encode()
         |> EQRCode.svg(width: 240)
 
-      {:ok,
-       socket
-       |> assign(:page_title, "Room #{id}")
-       |> assign(:admin?, session["admin:#{id}"] == id)
-       |> assign(:id, id)
-       |> assign(:room, room)
-       |> assign(:current_user, current_user)
-       |> assign(:users, [])
-       |> assign(:prizes, [])
-       |> assign(:invite_image, invite_image)
-       |> assign(:random_person, nil)
-       |> assign(:changeset, Rooms.change_prize(%Prize{}))
-       |> reload_users()
-       |> reload_prizes()}
+       socket =
+        assign(
+            socket,
+            page_title: "Room #{id}",
+            admin?: session["admin:#{id}"] == id,
+            id: id,
+            room: room,
+            current_user: current_user,
+            loading_winner?: false,
+            users: [],
+            prizes: [],
+            invite_image: invite_image,
+            random_person: nil
+          )
+
+       {:ok,
+        socket
+        |> assign(:changeset, Rooms.change_prize(%Prize{}))
+        |> reload_users()
+        |> reload_prizes()
+      }
     else
       {:ok,
        socket
@@ -96,14 +103,32 @@ defmodule SorteiosWeb.RoomLive.Show do
   end
 
   def handle_event("pick_a_random_person", _params, socket) do
+    Process.send_after(self(), :run_search, 3000)
+
+    socket =
+      assign(
+        socket,
+        randon_person: [],
+        loading_winner?: true
+      )
+
+    {:noreply, socket}
+  end
+
+  def handle_info(:run_search, socket) do
     random_person =
       socket.assigns.users
       |> Enum.reject(&(&1.email == socket.assigns.current_user.email))
       |> Enum.random()
 
-    {:noreply,
-     socket
-     |> assign(:random_person, random_person)}
+    socket =
+      assign(
+        socket,
+        random_person: random_person,
+        loading_winner?: false
+      )
+
+    {:noreply, socket}
   end
 
   def handle_event("give_prize_to_random_person", _params, socket) do
