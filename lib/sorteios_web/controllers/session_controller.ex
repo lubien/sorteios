@@ -38,6 +38,11 @@ defmodule SorteiosWeb.SessionController do
     end
   end
 
+  def create(conn, %{"user" => %{"name" => "", "email" => ""}}) do
+    {:ok, room} = Rooms.create_room(%{})
+    join_room(conn, room, generate_guest_user(), true)
+  end
+
   def create(conn, %{"user" => user_params}) do
     case User.changeset(%User{}, user_params) do
       %Ecto.Changeset{valid?: true} ->
@@ -71,5 +76,11 @@ defmodule SorteiosWeb.SessionController do
     |> put_session("name", params["name"])
     |> put_session("email", params["email"])
     |> redirect(to: Routes.room_show_path(conn, :show, room.id))
+  end
+
+  defp generate_guest_user do
+    symbols = Enum.to_list(?a..?z) ++ Enum.to_list(?A..?Z) ++ Enum.to_list(?0..?9)
+    random_string = for _ <- 1..10, into: "", do: <<Enum.random(symbols)>>
+    %{"name" => "Guest #{random_string}", "email" => "guest_#{random_string}@sorteios.lubien.dev"}
   end
 end
