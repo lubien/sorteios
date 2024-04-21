@@ -1,56 +1,67 @@
 <.form let={f} for={@changeset} action={Routes.session_path(@conn, :create)}>
   <SorteiosWeb.Components.auth_layout>
-    <div class="space-y-6">
-      <%= if @changeset.action do %>
-        <div class="alert alert-danger">
-          <p>Oops, something went wrong! Please check the errors below.</p>
-        </div>
-      <% end %>
+    <:left_side>
+      <div class="space-y-6">
+        <%= if @changeset.action do %>
+          <div class="alert alert-danger">
+            <p>Oops, something went wrong! Please check the errors below.</p>
+          </div>
+        <% end %>
 
-      <div>
-        <%= label(f, :name, class: "block text-sm font-medium text-gray-700") %>
-        <div class="mt-1">
-          <%= text_input(f, :name,
-            class:
-              "block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+        <div>
+          <%= label(f, :name, class: "block text-sm font-medium text-gray-700") %>
+          <div class="mt-1">
+            <%= text_input(f, :name,
+              class:
+                "block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+            ) %>
+          </div>
+          <%= error_tag(f, :name) %>
+        </div>
+
+        <div>
+          <%= label(f, :email, class: "block text-sm font-medium text-gray-700") %>
+          <div class="mt-1">
+            <%= email_input(f, :email,
+              class:
+                "block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+            ) %>
+          </div>
+          <%= error_tag(f, :email) %>
+        </div>
+
+        <div>
+          <%= label(f, :room_id, "Room ID (if you want to join)",
+            class: "block text-sm font-medium text-gray-700"
           ) %>
+          <div class="mt-1">
+            <%= text_input(f, :room_id,
+              class:
+                "block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+            ) %>
+          </div>
+          <%= error_tag(f, :room_id) %>
         </div>
-        <%= error_tag(f, :name) %>
-      </div>
 
-      <div>
-        <%= label(f, :email, class: "block text-sm font-medium text-gray-700") %>
-        <div class="mt-1">
-          <%= email_input(f, :email,
-            class:
-              "block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-          ) %>
-        </div>
-        <%= error_tag(f, :email) %>
-      </div>
-
-      <div>
-        <%= label(f, :room_id, "Room ID (if you want to join)",
-          class: "block text-sm font-medium text-gray-700"
-        ) %>
-        <div class="mt-1">
-          <%= text_input(f, :room_id,
-            class:
-              "block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-          ) %>
-        </div>
-        <%= error_tag(f, :room_id) %>
-      </div>
-
-      <div>
-        <%= submit("Join room",
-          name: "action",
-          value: "join_room",
-          class:
+        <div>
+          <%= submit class:
             "flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-        ) %>
+         do %>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24 "
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-6 h-6 mr-4"
+            >
+  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+</svg>join room
+          <% end %>
+        </div>
       </div>
-
+    </:left_side>
+    <:right_side>
       <div class="mt-6">
         <div class="relative mb-6">
           <div class="absolute inset-0 flex items-center">
@@ -62,12 +73,27 @@
         </div>
 
         <div class="mt-6">
-          <%= submit("Create new room",
-            class:
+          <%= submit class:
               "flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-          ) %>
+ do %>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-6 h-6 mr-4"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"
+              />
+            </svg>
+            Create new room
+          <% end %>
         </div>
       </div>
-    </div>
+    </:right_side>
   </SorteiosWeb.Components.auth_layout>
 </.form>

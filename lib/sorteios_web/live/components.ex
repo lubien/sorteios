@@ -68,11 +68,27 @@ defmodule SorteiosWeb.Components do
         </p>
       </div>
 
-      <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <%= render_slot(@inner_block) %>
+      <div class="relative font-inter antialiased">
+      <main class="relative flex flex-col justify-center bg-slate-50 overflow-hidden">
+        <div class="w-full max-w-6xl mx-auto px-4 md:px-6 py-24">
+          <div class="max-w-sm mx-auto grid gap-6 lg:grid-cols-2 items-start lg:max-w-none">
+            <!-- Pricing tab 1 -->
+            <div class="h-full">
+              <div class="relative flex flex-col h-full p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-900 shadow shadow-slate-950/5">
+                <%= render_slot(@left_side) %>
+              </div>
+            </div>
+            <!-- Pricing tab 2 -->
+              <div class="h-full">
+              <div class="relative flex flex-col h-full p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-900 shadow shadow-slate-950/5">
+                <%= render_slot(@right_side) %>
+              </div>
+            </div>
+          </div>
+          <!-- End: Pricing table component -->
         </div>
-      </div>
+      </main>
+    </div>
     </div>
 
     <.common_footer class=""/>
