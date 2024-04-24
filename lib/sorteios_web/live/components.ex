@@ -22,7 +22,12 @@ defmodule SorteiosWeb.Components do
             </div>
             <!-- Right section on desktop -->
             <div class="hidden lg:ml-4 lg:flex lg:items-center lg:pr-0.5">
-              <%= link "Logout", to: Routes.session_path(SorteiosWeb.Endpoint, :delete), method: :delete, class: "mt-3 inline-flex w-full items-center justify-center rounded-md border border-white bg-indigo-600 px-4 py-2 font-medium text-white shadow-sm hover:bg-indigo-700 hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm" %>
+              <%= link("Logout",
+                to: Routes.session_path(SorteiosWeb.Endpoint, :delete),
+                method: :delete,
+                class:
+                  "mt-3 inline-flex w-full items-center justify-center rounded-md border border-white bg-indigo-600 px-4 py-2 font-medium text-white shadow-sm hover:bg-indigo-700 hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+              ) %>
             </div>
           </div>
           <div class="hidden border-t border-white border-opacity-20 py-5 lg:block">
@@ -48,7 +53,7 @@ defmodule SorteiosWeb.Components do
           </div>
         </div>
       </main>
-      <.common_footer class="sm:text-left"/>
+      <.common_footer class="sm:text-left" />
     </div>
     """
   end
@@ -58,7 +63,7 @@ defmodule SorteiosWeb.Components do
     <div class="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div class="sm:mx-auto sm:w-full sm:max-w-md">
         <img
-          class="mx-auto h-12 w-auto"
+          class="mx-auto h-16 w-auto"
           src={Routes.static_path(SorteiosWeb.Endpoint, "/images/sorteio-logo-black.svg")}
           alt="Your Company"
         />
@@ -69,29 +74,27 @@ defmodule SorteiosWeb.Components do
       </div>
 
       <div class="relative font-inter antialiased">
-      <main class="relative flex flex-col justify-center bg-slate-50 overflow-hidden">
-        <div class="w-full max-w-6xl mx-auto px-4 md:px-6 py-24">
-          <div class="max-w-sm mx-auto grid gap-6 lg:grid-cols-2 items-start lg:max-w-none">
-            <!-- Pricing tab 1 -->
-            <div class="h-full">
-              <div class="relative flex flex-col h-full p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-900 shadow shadow-slate-950/5">
-                <%= render_slot(@left_side) %>
-              </div>
-            </div>
-            <!-- Pricing tab 2 -->
+        <main class="relative flex flex-col justify-center overflow-hidden">
+          <div class="w-full max-w-6xl mx-auto px-4 md:px-6 py-6">
+            <div class="max-w-sm mx-auto grid gap-6 lg:grid-cols-2 items-start lg:max-w-none">
               <div class="h-full">
-              <div class="relative flex flex-col h-full p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-900 shadow shadow-slate-950/5">
-                <%= render_slot(@right_side) %>
+                <div class="relative flex flex-col h-full p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-900 shadow shadow-slate-950/5">
+                  <%= render_slot(@left_side) %>
+                </div>
+              </div>
+
+              <div class="h-full">
+                <div class="relative flex flex-col h-full p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-900 shadow shadow-slate-950/5">
+                  <%= render_slot(@right_side) %>
+                </div>
               </div>
             </div>
           </div>
-          <!-- End: Pricing table component -->
-        </div>
-      </main>
-    </div>
+        </main>
+      </div>
     </div>
 
-    <.common_footer class=""/>
+    <.common_footer class="" />
     """
   end
 
