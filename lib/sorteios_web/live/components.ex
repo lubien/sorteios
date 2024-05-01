@@ -78,13 +78,13 @@ defmodule SorteiosWeb.Components do
           <div class="w-full max-w-6xl mx-auto px-4 md:px-6 py-6">
             <div class="max-w-sm mx-auto grid gap-6 lg:grid-cols-2 items-start lg:max-w-none">
               <div class="h-full">
-                <div class="relative flex flex-col h-full p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-900 shadow shadow-slate-950/5">
+                <div class="relative flex flex-col h-full p-6 rounded-2xl bg-white border border-slate-200 shadow shadow-slate-950/5">
                   <%= render_slot(@left_side) %>
                 </div>
               </div>
 
               <div class="h-full">
-                <div class="relative flex flex-col h-full p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-900 shadow shadow-slate-950/5">
+                <div class="relative flex flex-col h-full p-6 rounded-2xl bg-white border border-slate-200 shadow shadow-slate-950/5">
                   <%= render_slot(@right_side) %>
                 </div>
               </div>
