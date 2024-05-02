@@ -38,6 +38,25 @@ defmodule SorteiosWeb.SessionController do
     end
   end
 
+  # create a room
+  def create(conn, %{"action" => "create_room_user", "user" => user_params}) do
+    case User.changeset(%User{}, user_params) do
+      %Ecto.Changeset{valid?: true} ->
+        {:ok, room} = Rooms.create_room(%{})
+        join_room(conn, room, user_params, true)
+
+      changeset ->
+        changeset = Map.put(changeset, :action, :save)
+        render(conn, "new.html", changeset: changeset)
+    end
+  end
+
+  def create(conn, %{"user" => %{"name" => "", "email" => ""}}) do
+    {:ok, room} = Rooms.create_room(%{})
+    join_room(conn, room, generate_guest_user(), true)
+  end
+#------
+
   def create(conn, %{"user" => %{"name" => "", "email" => ""}}) do
     {:ok, room} = Rooms.create_room(%{})
     join_room(conn, room, generate_guest_user(), true)
