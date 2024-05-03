@@ -30,9 +30,7 @@
       </div>
 
       <div>
-        <%= label(f, :room_id, "Room ID (if you want to join)",
-          class: "block text-sm font-medium text-gray-700"
-        ) %>
+        <%= label(f, :room_id, "*Room ID", class: "block text-sm font-medium text-gray-700") %>
         <div class="mt-1">
           <%= text_input(f, :room_id,
             class:
@@ -42,14 +40,21 @@
         <%= error_tag(f, :room_id) %>
       </div>
 
-      <div>
+      <div class="flex flex-row gap-2">
         <%= submit("Join room",
           name: "action",
           value: "join_room",
           class:
             "flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
         ) %>
+        <%= submit("Create a room",
+          name: "action",
+          value: "create_room_user",
+          class:
+            "flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+        ) %>
       </div>
+      <span class="bg-white text-sm text-gray-400">*If you already have a invite</span>
 
       <div class="mt-6">
         <div class="relative mb-6">
@@ -57,12 +62,12 @@
             <div class="w-full border-t border-gray-300"></div>
           </div>
           <div class="relative flex justify-center text-sm">
-            <span class="bg-white px-2 text-gray-500">Or create a room</span>
+            <span class="bg-white px-2 text-gray-500">Or create a instant room</span>
           </div>
         </div>
 
         <div class="mt-6">
-          <%= submit("Create new room",
+          <%= submit("Instant room",
             class:
               "flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           ) %>
