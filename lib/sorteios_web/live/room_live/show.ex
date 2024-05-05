@@ -159,6 +159,10 @@ defmodule SorteiosWeb.RoomLive.Show do
     {:noreply, reload_prizes(socket)}
   end
 
+  def handle_info("remove_disconnected_users", socket) do
+    {:noreply, reload_users(socket)}
+  end
+
   defp topic(%{assigns: %{room: room}}), do: topic(room)
   defp topic(%Room{id: id}), do: "room:#{id}"
 
@@ -202,6 +206,26 @@ defmodule SorteiosWeb.RoomLive.Show do
   def reload_users(socket) do
     users =
       Rooms.list_participants_for_room(socket.assigns.id)
+
+    disconnected_users =
+      socket.assigns.users
+      |> Enum.filter(fn user ->
+        not Enum.any?(users, &(&1[:email] == user[:email]))
+      end)
+      |> Enum.map(fn user ->
+        if Map.get(user, :disconnected_at, nil) == nil do
+          Map.put(user, :disconnected_at, NaiveDateTime.utc_now)
+        else
+          user
+        end
+      end)
+      |> Enum.filter(&(NaiveDateTime.diff(NaiveDateTime.utc_now, &1[:disconnected_at], :millisecond) < 30_000))
+
+    if Enum.count(disconnected_users) > 0 do
+      Process.send_after(self(), "remove_disconnected_users", 30_100)
+    end
+
+    users = users ++ disconnected_users
 
     eligible_users_count = length(users) - 1
     winning_chance = compute_chance(eligible_users_count)
