@@ -179,12 +179,26 @@
                 <div class="w-full sm:max-w-xs">
                   <%= text_input(f, :name,
                     placeholder: "Name",
+                    required: true,
                     class:
                       "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   ) %>
                 </div>
 
                 <%= error_tag(f, :name) %>
+
+                <div class="w-full sm:max-w-xs ml-2">
+                  <%= number_input(f, :quantity,
+                    placeholder: "how many?",
+                    min: 1,
+                    max: 15,
+                    value: @count_prizes,
+                    required: true,
+                    class:
+                      "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  ) %>
+                </div>    
+
 
                 <%= submit("Add",
                   phx_disable_with: "Adding...",

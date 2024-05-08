@@ -15,7 +15,6 @@ defmodule SorteiosWeb.RoomLive.Show do
         email: email
       }
 
-
       {:ok, _participant} = Rooms.create_participant(Map.put(current_user, :room_id, id))
 
       PubSub.subscribe(Sorteios.PubSub, topic(room))
@@ -28,27 +27,27 @@ defmodule SorteiosWeb.RoomLive.Show do
         |> EQRCode.encode()
         |> EQRCode.svg(width: 240)
 
-       socket =
+      socket =
         assign(
-            socket,
-            page_title: "Room #{id}",
-            admin?: session["admin:#{id}"] == id,
-            id: id,
-            room: room,
-            current_user: current_user,
-            loading_winner?: false,
-            users: [],
-            prizes: [],
-            invite_image: invite_image,
-            random_person: nil
-          )
+          socket,
+          page_title: "Room #{id}",
+          admin?: session["admin:#{id}"] == id,
+          id: id,
+          room: room,
+          current_user: current_user,
+          loading_winner?: false,
+          users: [],
+          prizes: [],
+          invite_image: invite_image,
+          random_person: nil,
+          count_prizes: 1
+        )
 
-       {:ok,
-        socket
-        |> assign(:changeset, Rooms.change_prize(%Prize{}))
-        |> reload_users()
-        |> reload_prizes()
-      }
+      {:ok,
+       socket
+       |> assign(:changeset, Rooms.change_prize(%Prize{}))
+       |> reload_users()
+       |> reload_prizes()}
     else
       {:ok,
        socket
@@ -68,17 +67,22 @@ defmodule SorteiosWeb.RoomLive.Show do
   def handle_event("create_prize", %{"prize" => prize_params}, socket) do
     prize_params = Map.put(prize_params, "room_id", socket.assigns.id)
 
-    case Rooms.create_prize(prize_params) do
-      {:ok, _prize} ->
-        PubSub.broadcast!(Sorteios.PubSub, topic(socket), "reload_prizes")
+    quantity = String.to_integer(prize_params["quantity"])
 
-        {:noreply,
-         socket
-         |> reload_prizes()
-         |> put_flash(:info, "Prize created successfully")}
+    for count <- 1..quantity do
+      updated_params = Map.put(prize_params, "name", "#{prize_params["name"]} ##{count}")
+      case Rooms.create_prize(updated_params) do
+        {:ok, _prize} ->
+          PubSub.broadcast!(Sorteios.PubSub, topic(socket), "reload_prizes")
 
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, changeset: changeset)}
+          {:noreply,
+           socket
+           |> reload_prizes()
+           |> put_flash(:info, "Prize created successfully")}
+
+        {:error, %Ecto.Changeset{} = changeset} ->
+          {:noreply, assign(socket, changeset: changeset)}
+      end
     end
   end
 
@@ -193,15 +197,14 @@ defmodule SorteiosWeb.RoomLive.Show do
 
   def compute_chance(users_length) do
     if users_length > 0 do
-      100/users_length
+      100 / users_length
     else
       0.0
     end
   end
 
   def reload_users(socket) do
-    users =
-      Rooms.list_participants_for_room(socket.assigns.id)
+    users = Rooms.list_participants_for_room(socket.assigns.id)
 
     eligible_users_count = length(users) - 1
     winning_chance = compute_chance(eligible_users_count)
