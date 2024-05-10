@@ -70,7 +70,12 @@ defmodule SorteiosWeb.RoomLive.Show do
     quantity = String.to_integer(prize_params["quantity"])
 
     for count <- 1..quantity do
-      updated_params = Map.put(prize_params, "name", "#{prize_params["name"]} ##{count}")
+      name = if quantity == 1 do
+        prize_params["name"]
+      else
+        "#{prize_params["name"]} ##{count}"
+      end
+      updated_params = Map.put(prize_params, "name", name)
       case Rooms.create_prize(updated_params) do
         {:ok, _prize} ->
           PubSub.broadcast!(Sorteios.PubSub, topic(socket), "reload_prizes")
