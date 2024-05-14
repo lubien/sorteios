@@ -80,15 +80,15 @@ defmodule SorteiosWeb.RoomLive.Show do
         {:ok, _prize} ->
           PubSub.broadcast!(Sorteios.PubSub, topic(socket), "reload_prizes")
 
-          {:noreply,
-           socket
-           |> reload_prizes()
-           |> put_flash(:info, "Prize created successfully")}
 
-        {:error, %Ecto.Changeset{} = changeset} ->
-          {:noreply, assign(socket, changeset: changeset)}
-      end
-    end
+          {:error, %Ecto.Changeset{} = changeset} ->
+            {:noreply, assign(socket, changeset: changeset)}
+          end
+        end
+        {:noreply,
+         socket
+         |> reload_prizes()
+         |> put_flash(:info, "Prize created successfully")}
   end
 
   def handle_event("remove_prize", %{"prize-name" => prize_name}, socket) do
