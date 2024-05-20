@@ -5,7 +5,7 @@ defmodule SorteiosWeb.ExportController do
     invite_image =
       Routes.room_show_url(conn, :show, room_id)
       |> EQRCode.encode()
-      |> EQRCode.svg(width: 240)
+      |> EQRCode.svg(width: 360)
 
     conn
     |> put_resp_content_type("image/svg+xml")
