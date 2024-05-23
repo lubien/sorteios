@@ -46,6 +46,7 @@ defmodule SorteiosWeb.RoomLive.Show do
       {:ok,
        socket
        |> assign(:changeset, Rooms.change_prize(%Prize{}))
+       |> assign(:region, System.get_env("FLY_REGION") || "iad")
        |> reload_users()
        |> reload_prizes()}
     else
@@ -148,6 +149,10 @@ defmodule SorteiosWeb.RoomLive.Show do
     else
       {:noreply, put_flash(socket, :error, "Sem premios para sortear")}
     end
+  end
+
+  def handle_event("ping", %{"rtt" => rtt}, socket) do
+    {:noreply, push_event(socket, "pong", %{rtt: rtt})}
   end
 
   @impl true

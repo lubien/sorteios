@@ -49,7 +49,7 @@
                     <p class="truncate text-md font-medium text-indigo-600"><%= prize.name %></p>
                     <p class="mt-2 flex items-center text-sm text-gray-500"></p>
                   </div>
-                  <div class="mt-4 md:mt-0"> 
+                  <div class="mt-4 md:mt-0">
                     <%= if prize.winner_name do %>
                       <p class="flex items-center text-sm text-gray-500">
                         <!-- Heroicon name: mini/check-circle -->
@@ -259,4 +259,20 @@
       </section>
     <% end %>
   </:right_side>
+  
+  <div class="relative">
+    <div
+      id="ping-container"
+      class="fixed bottom-0 right-0 bg-gray-900 text-gray-200 px-2 rounded-tl-md text-sm w-[114px] min-w-max"
+      phx-update="ignore"
+    >
+      <span id="ping" phx-hook="Ping"></span>
+      <%= if @region do %>
+        <img
+          class="inline w-5 h-5 absolute right-0"
+          src={"https://fly.io/ui/images/#{@region}.svg"}
+        />
+      <% end %>
+    </div>
+  </div>
 </SorteiosWeb.Components.two_columns_layout>
