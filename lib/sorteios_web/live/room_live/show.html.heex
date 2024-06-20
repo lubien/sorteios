@@ -26,70 +26,29 @@
           </span>
         </button>
       <% end %>
-
-      <%= for prize <- @prizes do %>
+      
+      <%= if @current_prize != nil do %>
+      <div class="border-b border-gray-200 py-5">
+        <h3 class="text-lg font-medium leading-4 text-gray-900 mx-2 pl-4">Current prize</h3>
+      </div>
+      <%= for prize <- [@current_prize] do %>
         <li>
           <a href="#" class="block hover:bg-gray-50">
             <div class="flex items-center px-4 py-4 sm:px-6">
               <div class="flex min-w-0 flex-1 items-center">
                 <div class="flex-shrink-0">
-                  <%= if prize.winner_name do %>
-                    <img
-                      class="h-12 w-12 rounded-full"
-                      src={gravatar(prize.winner_email || "")}
-                      alt=""
-                    />
-                  <% else %>
-                    <div class="h-12 w-12 rounded-full bg-gray-200 border-2 border-gray-400 border-dotted">
-                    </div>
-                  <% end %>
+                  <div class="h-12 w-12 rounded-full bg-gray-200 border-2 border-gray-400 border-dotted">
+                  </div>
                 </div>
                 <div class="min-w-0 flex-1 px-4 md:grid md:grid-cols-2 md:gap-4 items-center">
                   <div>
                     <p class="truncate text-md font-medium text-indigo-600"><%= prize.name %></p>
                     <p class="mt-2 flex items-center text-sm text-gray-500"></p>
                   </div>
-                  <div class="mt-4 md:mt-0"> 
-                    <%= if prize.winner_name do %>
-                      <p class="flex items-center text-sm text-gray-500">
-                        <!-- Heroicon name: mini/check-circle -->
-                        <svg
-                          class="mr-1.5 h-5 w-5 flex-shrink-0 text-green-400"
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                          aria-hidden="true"
-                        >
-                          <path
-                            fill-rule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-                            clip-rule="evenodd"
-                          />
-                        </svg>
-                        <%= prize.winner_name %>
-                      </p>
-                      <%= if prize.winner_email != nil and @admin? do %>
-                        <p class="mt-2 text-sm text-gray-900 flex items-center">
-                          <!-- Heroicon name: mini/envelope -->
-                          <svg
-                            class="mr-1.5 h-5 w-5 flex-shrink-0 text-gray-400"
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                            aria-hidden="true"
-                          >
-                            <path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z" />
-                            <path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z" />
-                          </svg>
-
-                          <span class="truncate"><%= prize.winner_email %></span>
-                        </p>
-                      <% end %>
-                    <% else %>
-                      <p class="mt-2 text-sm text-gray-900 flex items-center">
-                        No winner yet
-                      </p>
-                    <% end %>
+                  <div class="mt-4 md:mt-0">
+                    <p class="mt-2 ml-8 ext-sm text-gray-900 flex items-center">
+                      No winner yet
+                    </p>
                   </div>
                 </div>
               </div>
@@ -100,11 +59,141 @@
                   data-confirm="Are you sure? This cannot be undone"
                   class="block w-full px-4 py-2 font-medium sm:my-2 sm:w-auto sm:text-sm"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="w-6 h-6"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                    />
                   </svg>
                 </button>
               <% end %>
+            </div>
+          </a>
+        </li>
+      <% end %>
+      <% end %>
+      <%= if !Enum.empty?(@next_prizes) do %>
+      <div class="border-b border-gray-200 py-5">
+        <h3 class="text-lg font-medium leading-4 text-gray-900 mx-2 pl-4">Next prizes</h3>
+      </div>
+      <% end %>
+      <%= for prize <- @next_prizes do %>
+        <li>
+          <a href="#" class="block hover:bg-gray-50">
+            <div class="flex items-center px-4 py-4 sm:px-6">
+              <div class="flex min-w-0 flex-1 items-center">
+                <div class="flex-shrink-0">
+                  <div class="h-12 w-12 rounded-full bg-gray-200 border-2 border-gray-400 border-dotted">
+                  </div>
+                </div>
+                <div class="min-w-0 flex-1 px-4 md:grid md:grid-cols-2 md:gap-4 items-center">
+                  <div>
+                    <p class="truncate text-md font-medium text-indigo-600"><%= prize.name %></p>
+                    <p class="mt-2 flex items-center text-sm text-gray-500"></p>
+                  </div>
+                  <div class="mt-4 md:mt-0">
+                    <p class="mt-2 ml-8 ext-sm text-gray-900 flex items-center">
+                      No winner yet
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <%= if @admin? && prize.winner_name == nil do %>
+                <button
+                  phx-click="remove_prize"
+                  phx-value-prize-name={prize.name}
+                  data-confirm="Are you sure? This cannot be undone"
+                  class="block w-full px-4 py-2 font-medium sm:my-2 sm:w-auto sm:text-sm"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="w-6 h-6"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                    />
+                  </svg>
+                </button>
+              <% end %>
+            </div>
+          </a>
+        </li>
+      <% end %>
+
+      
+      <%= if !Enum.empty?(@winners) do %>
+      <div class="border-b border-gray-200 py-5">
+        <h3 class="text-lg font-medium leading-4 text-gray-900 mx-2 pl-4">Winners</h3>
+      </div>
+      <% end %>
+      <%= for prize <- @winners do %>
+        <li>
+          <a href="#" class="block hover:bg-gray-50">
+            <div class="flex items-center px-4 py-4 sm:px-6">
+              <div class="flex min-w-0 flex-1 items-center">
+                <div class="flex-shrink-0">
+                  <img
+                    class="h-12 w-12 rounded-full"
+                    src={gravatar(prize.winner_email || "")}
+                    alt=""
+                  />
+                </div>
+                <div class="min-w-0 flex-1 px-4 md:grid md:grid-cols-2 md:gap-4 items-center">
+                  <div>
+                    <p class="truncate text-md font-medium text-indigo-600"><%= prize.name %></p>
+                    <p class="mt-2 flex items-center text-sm text-gray-500"></p>
+                  </div>
+                  <div class="mt-4 md:mt-0">
+                    <p class="flex items-center text-sm text-gray-500">
+                      <!-- Heroicon name: mini/check-circle -->
+                      <svg
+                        class="mr-1.5 h-5 w-5 flex-shrink-0 text-green-400"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        aria-hidden="true"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                      <%= prize.winner_name %>
+                    </p>
+
+                    <p class="mt-2 text-sm text-gray-900 flex items-center">
+                      <!-- Heroicon name: mini/envelope -->
+                      <svg
+                        class="mr-1.5 h-5 w-5 flex-shrink-0 text-gray-400"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        aria-hidden="true"
+                      >
+                        <path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z" />
+                        <path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z" />
+                      </svg>
+
+                      <span class="truncate"><%= prize.winner_email %></span>
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </a>
         </li>
@@ -154,7 +243,9 @@
             </div>
 
             <div class="flex place-content-center">
-              <%= link {:safe, @invite_image}, to: Routes.export_path(@socket, :create_qr_code, @id) %>
+              <%= link({:safe, @invite_image},
+                to: Routes.export_path(@socket, :create_qr_code, @id)
+              ) %>
             </div>
           </div>
         </div>
@@ -197,8 +288,7 @@
                     class:
                       "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   ) %>
-                </div>    
-
+                </div>
 
                 <%= submit("Add",
                   phx_disable_with: "Adding...",
@@ -221,19 +311,22 @@
               <h3 class="text-lg font-medium leading-6 text-gray-900">Prize drawing</h3>
 
               <%= if Enum.any?(@available_prizes) do %>
-                <p class="text-sm font-medium text-gray-900">Eligible users: <%= @eligible_users_count %></p>
-                <p class="text-sm font-medium text-gray-900">Chances: <%= :erlang.float_to_binary(@winning_chance, [decimals: 2]) %>%</p>
+                <p class="text-sm font-medium text-gray-900">
+                  Eligible users: <%= @eligible_users_count %>
+                </p>
+                <p class="text-sm font-medium text-gray-900">
+                  Chances: <%= :erlang.float_to_binary(@winning_chance, decimals: 2) %>%
+                </p>
                 <button
                   phx-click="pick_a_random_person"
                   class="block w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:my-2 sm:w-auto sm:text-sm"
                 >
                   Draw random person
                 </button>
-                
+
                 <%= if @loading_winner? do %>
                   <div class="loader">Loading...</div>
                 <% end %>
-                
               <% else %>
                 <button
                   disabled
