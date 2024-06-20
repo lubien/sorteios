@@ -40,7 +40,10 @@ defmodule SorteiosWeb.RoomLive.Show do
           prizes: [],
           invite_image: invite_image,
           random_person: nil,
-          count_prizes: 1
+          count_prizes: 1,
+          current_prize: [],
+          winners: [],
+          next_prizes: []
         )
 
       {:ok,
@@ -70,12 +73,15 @@ defmodule SorteiosWeb.RoomLive.Show do
     quantity = String.to_integer(prize_params["quantity"])
 
     for count <- 1..quantity do
-      name = if quantity == 1 do
-        prize_params["name"]
-      else
-        "#{prize_params["name"]} ##{count}"
-      end
+      name =
+        if quantity == 1 do
+          prize_params["name"]
+        else
+          "#{prize_params["name"]} ##{count}"
+        end
+
       updated_params = Map.put(prize_params, "name", name)
+
       case Rooms.create_prize(updated_params) do
         {:ok, _prize} ->
           PubSub.broadcast!(Sorteios.PubSub, topic(socket), "reload_prizes")
@@ -222,9 +228,17 @@ defmodule SorteiosWeb.RoomLive.Show do
 
   def filter_available_prizes(socket) do
     prizes = socket.assigns.prizes
+    {available_prizes, winners} = Enum.split_with(prizes, &(&1.winner_name == nil))
+
+    current_prize = List.first(available_prizes)
+    next_prizes = Enum.drop(available_prizes, 1)
 
     socket
-    |> assign(:available_prizes, Enum.filter(prizes, &(&1.winner_name == nil)))
+    |> assign(:available_prizes, available_prizes)
+    |> assign(:current_prize, current_prize)
+    |> assign(:next_prizes, next_prizes)
+    |> assign(:winners, winners)
+
   end
 
   def gravatar(email) do
