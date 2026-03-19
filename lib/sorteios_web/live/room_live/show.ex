@@ -70,12 +70,15 @@ defmodule SorteiosWeb.RoomLive.Show do
     quantity = String.to_integer(prize_params["quantity"])
 
     for count <- 1..quantity do
-      name = if quantity == 1 do
-        prize_params["name"]
-      else
-        "#{prize_params["name"]} ##{count}"
-      end
+      name =
+        if quantity == 1 do
+          prize_params["name"]
+        else
+          "#{prize_params["name"]} ##{count}"
+        end
+
       updated_params = Map.put(prize_params, "name", name)
+
       case Rooms.create_prize(updated_params) do
         {:ok, _prize} ->
           PubSub.broadcast!(Sorteios.PubSub, topic(socket), "reload_prizes")
@@ -247,9 +250,9 @@ defmodule SorteiosWeb.RoomLive.Show do
       <div class="min-w-0 flex-1">
         <a href="#" class="focus:outline-none">
           <span class="absolute inset-0" aria-hidden="true"></span>
-          <p class="text-sm font-medium text-gray-900"><%= @user.name %></p>
+          <p class="text-sm font-medium text-gray-900">{@user.name}</p>
           <%= if @show_email? do %>
-            <p class="truncate text-sm text-gray-500"><%= @user.email %></p>
+            <p class="truncate text-sm text-gray-500">{@user.email}</p>
           <% end %>
         </a>
       </div>

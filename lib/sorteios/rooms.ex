@@ -225,7 +225,7 @@ defmodule Sorteios.Rooms do
     Repo.all(Participant)
   end
 
-    @doc """
+  @doc """
   Returns the list of participants.
 
   ## Examples
@@ -275,7 +275,6 @@ defmodule Sorteios.Rooms do
       on_conflict: [set: [name: attrs.name]],
       conflict_target: [:email, :room_id]
     )
-
   end
 
   @doc """

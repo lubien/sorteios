@@ -13,7 +13,10 @@ config :sorteios,
 # Configures the endpoint
 config :sorteios, SorteiosWeb.Endpoint,
   url: [host: "localhost"],
-  render_errors: [view: SorteiosWeb.ErrorView, accepts: ~w(html json), layout: false],
+  render_errors: [
+    formats: [html: SorteiosWeb.ErrorHTML, json: SorteiosWeb.ErrorJSON],
+    layout: false
+  ],
   pubsub_server: Sorteios.PubSub,
   live_view: [signing_salt: "y6r1OO9W"]
 

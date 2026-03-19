@@ -22,7 +22,14 @@ defmodule SorteiosWeb.Components do
             </div>
             <!-- Right section on desktop -->
             <div class="hidden lg:ml-4 lg:flex lg:items-center lg:pr-0.5">
-              <%= link "Logout", to: Routes.session_path(SorteiosWeb.Endpoint, :delete), data: [confirm: "Are you sure? This cannot be undone"],  method: :delete, class: "mt-3 inline-flex w-full items-center justify-center rounded-md border border-white bg-indigo-600 px-4 py-2 font-medium text-white shadow-sm hover:bg-indigo-700 hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm" %>
+              <.link
+                href={Routes.session_path(SorteiosWeb.Endpoint, :delete)}
+                method="delete"
+                data-confirm="Are you sure? This cannot be undone"
+                class="mt-3 inline-flex w-full items-center justify-center rounded-md border border-white bg-indigo-600 px-4 py-2 font-medium text-white shadow-sm hover:bg-indigo-700 hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+              >
+                Logout
+              </.link>
             </div>
           </div>
           <div class="hidden border-t border-white border-opacity-20 py-5 lg:block">
@@ -39,16 +46,16 @@ defmodule SorteiosWeb.Components do
           <div class="grid grid-cols-1 items-start gap-4 lg:grid-cols-3 lg:gap-8">
             <!-- Left column -->
             <div class="grid grid-cols-1 gap-4 lg:col-span-2">
-              <%= render_slot(@inner_block) %>
+              {render_slot(@inner_block)}
             </div>
             <!-- Right column -->
             <div class="grid grid-cols-1 gap-4">
-              <%= render_slot(@right_side) %>
+              {render_slot(@right_side)}
             </div>
           </div>
         </div>
       </main>
-      <.common_footer class="sm:text-left"/>
+      <.common_footer class="sm:text-left" />
     </div>
     """
   end
@@ -70,12 +77,12 @@ defmodule SorteiosWeb.Components do
 
       <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <%= render_slot(@inner_block) %>
+          {render_slot(@inner_block)}
         </div>
       </div>
     </div>
 
-    <.common_footer class=""/>
+    <.common_footer class="" />
     """
   end
 
@@ -85,7 +92,7 @@ defmodule SorteiosWeb.Components do
       <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
         <div class={["border-t border-gray-200 py-8 text-sm text-center text-gray-500", @class]}>
           <span class="block sm:inline">
-            &copy; <%= DateTime.utc_now().year %> Sorteios.
+            &copy; {DateTime.utc_now().year} Sorteios.
           </span>
           <span class="block sm:inline">
             Made by <a
@@ -102,7 +109,7 @@ defmodule SorteiosWeb.Components do
             >GitHub Repo</a>.
           </span>
           <span class="block sm:inline">
-            Region <%= System.get_env("FLY_REGION") || "local" %>.
+            Region {System.get_env("FLY_REGION") || "local"}.
           </span>
         </div>
       </div>

@@ -1,6 +1,5 @@
 defmodule SorteiosWeb.LiveHelpers do
-  import Phoenix.LiveView
-  import Phoenix.LiveView.Helpers
+  use Phoenix.Component
 
   alias Phoenix.LiveView.JS
 
@@ -36,17 +35,14 @@ defmodule SorteiosWeb.LiveHelpers do
         phx-key="escape"
       >
         <%= if @return_to do %>
-          <%= live_patch("✖",
-            to: @return_to,
-            id: "close",
-            class: "phx-modal-close",
-            phx_click: hide_modal()
-          ) %>
+          <.link patch={@return_to} id="close" class="phx-modal-close" phx-click={hide_modal()}>
+            ✖
+          </.link>
         <% else %>
           <a id="close" href="#" class="phx-modal-close" phx-click={hide_modal()}>✖</a>
         <% end %>
 
-        <%= render_slot(@inner_block) %>
+        {render_slot(@inner_block)}
       </div>
     </div>
     """
