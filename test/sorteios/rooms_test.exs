@@ -8,8 +8,6 @@ defmodule Sorteios.RoomsTest do
 
     import Sorteios.RoomsFixtures
 
-    @invalid_attrs %{}
-
     test "list_rooms/0 returns all rooms" do
       room = room_fixture()
       assert Rooms.list_rooms() == [room]
@@ -20,27 +18,15 @@ defmodule Sorteios.RoomsTest do
       assert Rooms.get_room!(room.id) == room
     end
 
-    test "create_room/1 with valid data creates a room" do
-      valid_attrs = %{}
-
-      assert {:ok, %Room{} = room} = Rooms.create_room(valid_attrs)
-    end
-
-    test "create_room/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = Rooms.create_room(@invalid_attrs)
+    test "create_room/1 creates a room" do
+      assert {:ok, %Room{}} = Rooms.create_room(%{})
     end
 
     test "update_room/2 with valid data updates the room" do
       room = room_fixture()
       update_attrs = %{}
 
-      assert {:ok, %Room{} = room} = Rooms.update_room(room, update_attrs)
-    end
-
-    test "update_room/2 with invalid data returns error changeset" do
-      room = room_fixture()
-      assert {:error, %Ecto.Changeset{}} = Rooms.update_room(room, @invalid_attrs)
-      assert room == Rooms.get_room!(room.id)
+      assert {:ok, %Room{} = _room} = Rooms.update_room(room, update_attrs)
     end
 
     test "delete_room/1 deletes the room" do
@@ -73,7 +59,8 @@ defmodule Sorteios.RoomsTest do
     end
 
     test "create_participant/1 with valid data creates a participant" do
-      valid_attrs = %{email: "some email", name: "some name"}
+      room = room_fixture()
+      valid_attrs = %{email: "some email", name: "some name", room_id: room.id}
 
       assert {:ok, %Participant{} = participant} = Rooms.create_participant(valid_attrs)
       assert participant.email == "some email"
@@ -88,7 +75,9 @@ defmodule Sorteios.RoomsTest do
       participant = participant_fixture()
       update_attrs = %{email: "some updated email", name: "some updated name"}
 
-      assert {:ok, %Participant{} = participant} = Rooms.update_participant(participant, update_attrs)
+      assert {:ok, %Participant{} = participant} =
+               Rooms.update_participant(participant, update_attrs)
+
       assert participant.email == "some updated email"
       assert participant.name == "some updated name"
     end

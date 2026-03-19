@@ -25,11 +25,14 @@ defmodule Sorteios.RoomsFixtures do
   Generate a participant.
   """
   def participant_fixture(attrs \\ %{}) do
+    room = room_fixture()
+
     {:ok, participant} =
       attrs
       |> Enum.into(%{
         email: unique_participant_email(),
-        name: "some name"
+        name: "some name",
+        room_id: room.id
       })
       |> Sorteios.Rooms.create_participant()
 
