@@ -19,7 +19,9 @@ defmodule SorteiosWeb do
 
   def controller do
     quote do
-      use Phoenix.Controller, namespace: SorteiosWeb
+      use Phoenix.Controller, formats: [html: "HTML"]
+
+      plug :put_layout, html: {SorteiosWeb.LayoutView, :app}
 
       import Plug.Conn
       use Gettext, backend: SorteiosWeb.Gettext
@@ -54,6 +56,18 @@ defmodule SorteiosWeb do
   def live_component do
     quote do
       use Phoenix.LiveComponent
+
+      unquote(view_helpers())
+    end
+  end
+
+  def html do
+    quote do
+      use Phoenix.Component
+
+      # Import convenience functions from controllers
+      import Phoenix.Controller, only: [view_module: 1, view_template: 1]
+      import Phoenix.Flash
 
       unquote(view_helpers())
     end
