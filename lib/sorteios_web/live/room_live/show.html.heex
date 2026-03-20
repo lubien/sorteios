@@ -1,6 +1,6 @@
 <SorteiosWeb.Components.two_columns_layout>
   <%!-- ── Full-screen drawing overlay ─────────────────────────────────── --%>
-  <%= if @admin? && @drawing_prize_id != nil do %>
+  <%= if @drawing_prize_id != nil do %>
     <% current_prize = Enum.find(@prizes, &(&1.id == @drawing_prize_id)) %>
     <div
       class="draw-overlay-enter fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden"
@@ -50,21 +50,23 @@
         </div>
       </div>
 
-      <%!-- Close / cancel --%>
-      <button
-        phx-click="cancel_draw"
-        class="absolute right-5 top-5 rounded-full p-2 text-indigo-300 hover:bg-indigo-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400"
-        aria-label="Cancel draw"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          class="h-6 w-6"
+      <%!-- Close / cancel (admin only) --%>
+      <%= if @admin? do %>
+        <button
+          phx-click="cancel_draw"
+          class="absolute right-5 top-5 rounded-full p-2 text-indigo-300 hover:bg-indigo-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          aria-label="Cancel draw"
         >
-          <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-        </svg>
-      </button>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            class="h-6 w-6"
+          >
+            <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+          </svg>
+        </button>
+      <% end %>
 
       <%!-- Prize label --%>
       <p class="mb-1 text-xs font-semibold uppercase tracking-widest text-indigo-400">
@@ -334,23 +336,27 @@
           <h3 class="text-3xl font-bold text-white sm:text-4xl">{@random_person.name}</h3>
           <p class="mt-1 text-indigo-300">{@random_person.email}</p>
 
-          <div class="mt-8 flex flex-col gap-3 sm:flex-row">
-            <button
-              phx-click="draw_prize"
-              phx-value-prize-id={@drawing_prize_id}
-              class="rounded-xl border-2 border-indigo-400 bg-transparent px-8 py-3 font-semibold text-indigo-200 hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            >
-              Re-draw
-            </button>
-            <button
-              phx-click="confirm_prize_winner"
-              phx-value-prize-id={@drawing_prize_id}
-              data-confirm="Are you sure? This cannot be undone"
-              class="rounded-xl border-2 border-transparent bg-indigo-500 px-8 py-3 font-semibold text-white hover:bg-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            >
-              🎉 Assign prize
-            </button>
-          </div>
+          <%= if @admin? do %>
+            <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+              <button
+                phx-click="draw_prize"
+                phx-value-prize-id={@drawing_prize_id}
+                class="rounded-xl border-2 border-indigo-400 bg-transparent px-8 py-3 font-semibold text-indigo-200 hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              >
+                Re-draw
+              </button>
+              <button
+                phx-click="confirm_prize_winner"
+                phx-value-prize-id={@drawing_prize_id}
+                data-confirm="Are you sure? This cannot be undone"
+                class="rounded-xl border-2 border-transparent bg-indigo-500 px-8 py-3 font-semibold text-white hover:bg-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              >
+                🎉 Assign prize
+              </button>
+            </div>
+          <% else %>
+            <p class="mt-6 text-sm text-indigo-400">Waiting for the admin to assign the prize…</p>
+          <% end %>
         </div>
       <% end %>
     </div>

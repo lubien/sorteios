@@ -613,6 +613,162 @@ defmodule SorteiosWeb.RoomLiveTest do
   end
 
   # ---------------------------------------------------------------------------
+  # Drawing overlay broadcast to all users
+  # ---------------------------------------------------------------------------
+
+  describe "Show - drawing overlay broadcast" do
+    setup do
+      room = room_fixture()
+      prize = prize_fixture(room)
+
+      {:ok, _} =
+        Sorteios.Rooms.create_participant(%{
+          name: "Other Person",
+          email: "other@example.com",
+          room_id: room.id
+        })
+
+      %{room: room, prize: prize}
+    end
+
+    test "non-admin sees the overlay when draw_started is broadcast", %{
+      conn: conn,
+      room: room,
+      prize: prize
+    } do
+      conn = conn_as_user(conn)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      send(lv.pid, %{event: "draw_started", prize_id: prize.id})
+
+      assert render(lv) =~ "Drawing"
+    end
+
+    test "non-admin overlay shows the prize name when draw_started is broadcast", %{
+      conn: conn,
+      room: room,
+      prize: prize
+    } do
+      conn = conn_as_user(conn)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      send(lv.pid, %{event: "draw_started", prize_id: prize.id})
+
+      assert render(lv) =~ prize.name
+    end
+
+    test "non-admin sees winner name when draw_result is broadcast", %{
+      conn: conn,
+      room: room,
+      prize: prize
+    } do
+      conn = conn_as_user(conn)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      send(lv.pid, %{event: "draw_started", prize_id: prize.id})
+
+      send(lv.pid, %{
+        event: "draw_result",
+        prize_id: prize.id,
+        person: %{name: "Jane Doe", email: "jane@example.com"}
+      })
+
+      assert render(lv) =~ "Jane Doe"
+    end
+
+    test "non-admin does not see admin action buttons during reveal", %{
+      conn: conn,
+      room: room,
+      prize: prize
+    } do
+      conn = conn_as_user(conn)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      send(lv.pid, %{event: "draw_started", prize_id: prize.id})
+
+      send(lv.pid, %{
+        event: "draw_result",
+        prize_id: prize.id,
+        person: %{name: "Jane Doe", email: "jane@example.com"}
+      })
+
+      refute has_element?(lv, "button[phx-click='confirm_prize_winner']")
+      refute has_element?(lv, "button[phx-click='draw_prize']")
+    end
+
+    test "non-admin sees waiting message during reveal", %{
+      conn: conn,
+      room: room,
+      prize: prize
+    } do
+      conn = conn_as_user(conn)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      send(lv.pid, %{event: "draw_started", prize_id: prize.id})
+
+      send(lv.pid, %{
+        event: "draw_result",
+        prize_id: prize.id,
+        person: %{name: "Jane Doe", email: "jane@example.com"}
+      })
+
+      assert render(lv) =~ "Waiting for the admin"
+    end
+
+    test "non-admin overlay closes when draw_cancelled is broadcast", %{
+      conn: conn,
+      room: room,
+      prize: prize
+    } do
+      conn = conn_as_user(conn)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      send(lv.pid, %{event: "draw_started", prize_id: prize.id})
+      send(lv.pid, %{event: "draw_cancelled"})
+
+      refute render(lv) =~ "Drawing"
+    end
+
+    test "non-admin does not see the cancel button", %{
+      conn: conn,
+      room: room,
+      prize: prize
+    } do
+      conn = conn_as_user(conn)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      send(lv.pid, %{event: "draw_started", prize_id: prize.id})
+
+      refute has_element?(lv, "button[phx-click='cancel_draw']")
+    end
+
+    test "overlay closes for all users when winner event fires", %{
+      conn: conn,
+      room: room,
+      prize: prize
+    } do
+      conn = conn_as_user(conn)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      send(lv.pid, %{event: "draw_started", prize_id: prize.id})
+
+      send(lv.pid, %{
+        event: "draw_result",
+        prize_id: prize.id,
+        person: %{name: "Jane Doe", email: "jane@example.com"}
+      })
+
+      send(lv.pid, %{
+        event: "winner",
+        winner: %{name: "Jane Doe", email: "jane@example.com"},
+        prize: prize
+      })
+
+      refute render(lv) =~ "Waiting for the admin"
+    end
+  end
+
+  # ---------------------------------------------------------------------------
   # Inline prize name editing
   # ---------------------------------------------------------------------------
 

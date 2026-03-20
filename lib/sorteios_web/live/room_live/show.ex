@@ -170,6 +170,11 @@ defmodule SorteiosWeb.RoomLive.Show do
   def handle_event("draw_prize", %{"prize-id" => prize_id}, socket) do
     Process.send_after(self(), {:run_search, prize_id}, 3000)
 
+    PubSub.broadcast_from!(Sorteios.PubSub, self(), topic(socket), %{
+      event: "draw_started",
+      prize_id: prize_id
+    })
+
     {:noreply,
      assign(socket,
        drawing_prize_id: prize_id,
@@ -189,6 +194,7 @@ defmodule SorteiosWeb.RoomLive.Show do
   end
 
   def handle_event("cancel_draw", _params, socket) do
+    PubSub.broadcast_from!(Sorteios.PubSub, self(), topic(socket), %{event: "draw_cancelled"})
     {:noreply, assign(socket, drawing_prize_id: nil, loading_winner?: false, random_person: nil)}
   end
 
@@ -200,13 +206,39 @@ defmodule SorteiosWeb.RoomLive.Show do
         |> Enum.reject(&(&1.email == socket.assigns.current_user.email))
 
       if Enum.empty?(eligible) do
+        PubSub.broadcast_from!(Sorteios.PubSub, self(), topic(socket), %{event: "draw_cancelled"})
         {:noreply, assign(socket, loading_winner?: false, drawing_prize_id: nil)}
       else
-        {:noreply, assign(socket, random_person: Enum.random(eligible), loading_winner?: false)}
+        random_person = Enum.random(eligible)
+
+        PubSub.broadcast_from!(Sorteios.PubSub, self(), topic(socket), %{
+          event: "draw_result",
+          prize_id: prize_id,
+          person: random_person
+        })
+
+        {:noreply, assign(socket, random_person: random_person, loading_winner?: false)}
       end
     else
       {:noreply, socket}
     end
+  end
+
+  def handle_info(%{event: "draw_started", prize_id: prize_id}, socket) do
+    {:noreply,
+     assign(socket,
+       drawing_prize_id: prize_id,
+       loading_winner?: true,
+       random_person: nil
+     )}
+  end
+
+  def handle_info(%{event: "draw_result", person: person}, socket) do
+    {:noreply, assign(socket, random_person: person, loading_winner?: false)}
+  end
+
+  def handle_info(%{event: "draw_cancelled"}, socket) do
+    {:noreply, assign(socket, drawing_prize_id: nil, loading_winner?: false, random_person: nil)}
   end
 
   def handle_info(%{event: "presence_diff"}, socket) do
@@ -217,6 +249,9 @@ defmodule SorteiosWeb.RoomLive.Show do
     socket =
       socket
       |> reload_prizes()
+      |> assign(:drawing_prize_id, nil)
+      |> assign(:random_person, nil)
+      |> assign(:loading_winner?, false)
       |> put_flash(:success, "#{winner.name} ganhou #{prize.name}")
 
     {:noreply, socket}
