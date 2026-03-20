@@ -3,6 +3,7 @@ defmodule SorteiosWeb.RoomLive.Show do
 
   alias Phoenix.PubSub
   alias Sorteios.Rooms
+  alias Phoenix.LiveView.JS
   alias Sorteios.Rooms.Room
   alias Sorteios.Rooms.Prize
   alias SorteiosWeb.Presence
@@ -39,7 +40,8 @@ defmodule SorteiosWeb.RoomLive.Show do
           users: [],
           prizes: [],
           invite_image: invite_image,
-          random_person: nil
+          random_person: nil,
+          editing_prize_id: nil
         )
 
       {:ok,
@@ -60,6 +62,37 @@ defmodule SorteiosWeb.RoomLive.Show do
      socket
      |> put_flash(:info, "You need to specify your name and email to enter")
      |> redirect(to: Routes.session_path(socket, :new, room_id: id))}
+  end
+
+  @impl true
+  def handle_event("start_edit_prize", %{"prize-id" => id}, socket) do
+    {:noreply, assign(socket, :editing_prize_id, id)}
+  end
+
+  def handle_event("cancel_edit_prize", _params, socket) do
+    {:noreply, assign(socket, :editing_prize_id, nil)}
+  end
+
+  def handle_event("save_prize_name", %{"value" => name, "prize-id" => id}, socket) do
+    prize = Rooms.get_prize!(id)
+    name = String.trim(name)
+
+    if name == "" or name == prize.name do
+      {:noreply, assign(socket, :editing_prize_id, nil)}
+    else
+      case Rooms.update_prize(prize, %{name: name}) do
+        {:ok, _prize} ->
+          PubSub.broadcast!(Sorteios.PubSub, topic(socket), "reload_prizes")
+
+          {:noreply,
+           socket
+           |> assign(:editing_prize_id, nil)
+           |> reload_prizes()}
+
+        {:error, %Ecto.Changeset{} = changeset} ->
+          {:noreply, assign(socket, changeset: changeset)}
+      end
+    end
   end
 
   @impl true

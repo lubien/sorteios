@@ -333,4 +333,234 @@ defmodule SorteiosWeb.RoomLiveTest do
       assert render(lv) =~ "Prize removed successfully"
     end
   end
+
+  # ---------------------------------------------------------------------------
+  # Inline prize name editing
+  # ---------------------------------------------------------------------------
+
+  describe "Show - inline prize name editing" do
+    setup do
+      room = room_fixture()
+      prize = prize_fixture(room)
+      %{room: room, prize: prize}
+    end
+
+    test "admin sees a clickable edit button on unclaimed prizes", %{conn: conn, room: room} do
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+      assert has_element?(lv, "button[phx-click='start_edit_prize']")
+    end
+
+    test "non-admin does not see the edit button", %{conn: conn, room: room} do
+      conn = conn_as_user(conn)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+      refute has_element?(lv, "button[phx-click='start_edit_prize']")
+    end
+
+    test "admin does not see edit button on claimed prize", %{conn: conn, room: room} do
+      claimed =
+        prize_fixture(room, %{
+          name: "Claimed",
+          winner_name: "Jane Doe",
+          winner_email: "jane@example.com"
+        })
+
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      refute has_element?(
+               lv,
+               "button[phx-click='start_edit_prize'][phx-value-prize-id='#{claimed.id}']"
+             )
+    end
+
+    test "clicking the edit button shows an input pre-filled with the prize name", %{
+      conn: conn,
+      room: room,
+      prize: prize
+    } do
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      lv
+      |> element("button[phx-click='start_edit_prize'][phx-value-prize-id='#{prize.id}']")
+      |> render_click()
+
+      assert has_element?(lv, "input[phx-blur='save_prize_name'][value='#{prize.name}']")
+    end
+
+    test "clicking edit hides the name button", %{conn: conn, room: room, prize: prize} do
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      lv
+      |> element("button[phx-click='start_edit_prize'][phx-value-prize-id='#{prize.id}']")
+      |> render_click()
+
+      refute has_element?(
+               lv,
+               "button[phx-click='start_edit_prize'][phx-value-prize-id='#{prize.id}']"
+             )
+    end
+
+    test "blurring the input with a new name saves it", %{conn: conn, room: room, prize: prize} do
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      lv
+      |> element("button[phx-click='start_edit_prize'][phx-value-prize-id='#{prize.id}']")
+      |> render_click()
+
+      lv
+      |> element("input[phx-blur='save_prize_name'][phx-value-prize-id='#{prize.id}']")
+      |> render_blur(%{"value" => "Golden Trophy"})
+
+      assert render(lv) =~ "Golden Trophy"
+    end
+
+    test "saving a new name persists to the database", %{conn: conn, room: room, prize: prize} do
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      lv
+      |> element("button[phx-click='start_edit_prize'][phx-value-prize-id='#{prize.id}']")
+      |> render_click()
+
+      lv
+      |> element("input[phx-blur='save_prize_name'][phx-value-prize-id='#{prize.id}']")
+      |> render_blur(%{"value" => "Platinum Cup"})
+
+      assert Rooms.get_prize!(prize.id).name == "Platinum Cup"
+    end
+
+    test "saving dismisses the input and shows the name button again", %{
+      conn: conn,
+      room: room,
+      prize: prize
+    } do
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      lv
+      |> element("button[phx-click='start_edit_prize'][phx-value-prize-id='#{prize.id}']")
+      |> render_click()
+
+      lv
+      |> element("input[phx-blur='save_prize_name'][phx-value-prize-id='#{prize.id}']")
+      |> render_blur(%{"value" => "New Name"})
+
+      assert has_element?(
+               lv,
+               "button[phx-click='start_edit_prize'][phx-value-prize-id='#{prize.id}']"
+             )
+    end
+
+    test "blurring with an empty name does not update the prize", %{
+      conn: conn,
+      room: room,
+      prize: prize
+    } do
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      lv
+      |> element("button[phx-click='start_edit_prize'][phx-value-prize-id='#{prize.id}']")
+      |> render_click()
+
+      lv
+      |> element("input[phx-blur='save_prize_name'][phx-value-prize-id='#{prize.id}']")
+      |> render_blur(%{"value" => "   "})
+
+      assert Rooms.get_prize!(prize.id).name == prize.name
+    end
+
+    test "blurring with the same name does not update the database", %{
+      conn: conn,
+      room: room,
+      prize: prize
+    } do
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      lv
+      |> element("button[phx-click='start_edit_prize'][phx-value-prize-id='#{prize.id}']")
+      |> render_click()
+
+      # touch the updated_at baseline
+      original_updated_at = Rooms.get_prize!(prize.id).updated_at
+
+      lv
+      |> element("input[phx-blur='save_prize_name'][phx-value-prize-id='#{prize.id}']")
+      |> render_blur(%{"value" => prize.name})
+
+      assert Rooms.get_prize!(prize.id).updated_at == original_updated_at
+    end
+
+    test "pressing Escape cancels editing and restores the name button", %{
+      conn: conn,
+      room: room,
+      prize: prize
+    } do
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      lv
+      |> element("button[phx-click='start_edit_prize'][phx-value-prize-id='#{prize.id}']")
+      |> render_click()
+
+      lv
+      |> element("input[phx-keydown='cancel_edit_prize']")
+      |> render_keydown(%{"key" => "Escape"})
+
+      assert has_element?(
+               lv,
+               "button[phx-click='start_edit_prize'][phx-value-prize-id='#{prize.id}']"
+             )
+    end
+
+    test "pressing Escape does not change the prize name", %{
+      conn: conn,
+      room: room,
+      prize: prize
+    } do
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      lv
+      |> element("button[phx-click='start_edit_prize'][phx-value-prize-id='#{prize.id}']")
+      |> render_click()
+
+      lv
+      |> element("input[phx-keydown='cancel_edit_prize']")
+      |> render_keydown(%{"key" => "Escape"})
+
+      assert render(lv) =~ prize.name
+      assert Rooms.get_prize!(prize.id).name == prize.name
+    end
+
+    test "only the clicked prize enters edit mode when multiple prizes exist", %{
+      conn: conn,
+      room: room,
+      prize: prize
+    } do
+      other = prize_fixture(room, %{name: "Other Prize"})
+
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      lv
+      |> element("button[phx-click='start_edit_prize'][phx-value-prize-id='#{prize.id}']")
+      |> render_click()
+
+      assert has_element?(
+               lv,
+               "input[phx-blur='save_prize_name'][phx-value-prize-id='#{prize.id}']"
+             )
+
+      assert has_element?(
+               lv,
+               "button[phx-click='start_edit_prize'][phx-value-prize-id='#{other.id}']"
+             )
+    end
+  end
 end

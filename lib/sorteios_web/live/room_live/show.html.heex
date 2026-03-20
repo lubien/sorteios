@@ -63,7 +63,40 @@
 
             <%!-- Name + winner info --%>
             <div class="min-w-0 flex-1">
-              <p class="truncate text-sm font-semibold text-indigo-600">{prize.name}</p>
+              <%= if @admin? && prize.winner_name == nil do %>
+                <%= if @editing_prize_id == prize.id do %>
+                  <input
+                    type="text"
+                    value={prize.name}
+                    phx-mounted={JS.focus()}
+                    phx-blur="save_prize_name"
+                    phx-value-prize-id={prize.id}
+                    phx-key="Escape"
+                    phx-keydown="cancel_edit_prize"
+                    class="w-full rounded border-indigo-300 text-sm font-semibold text-indigo-600 focus:border-indigo-500 focus:ring-indigo-500"
+                  />
+                <% else %>
+                  <button
+                    phx-click="start_edit_prize"
+                    phx-value-prize-id={prize.id}
+                    class="group flex items-center gap-1 text-left max-w-full"
+                  >
+                    <span class="truncate text-sm font-semibold text-indigo-600">
+                      {prize.name}
+                    </span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      class="h-3.5 w-3.5 flex-shrink-0 text-gray-300 group-hover:text-indigo-400"
+                    >
+                      <path d="M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z" />
+                    </svg>
+                  </button>
+                <% end %>
+              <% else %>
+                <p class="truncate text-sm font-semibold text-indigo-600">{prize.name}</p>
+              <% end %>
 
               <%= if prize.winner_name do %>
                 <p class="mt-1 flex items-center gap-1 text-sm text-gray-500">
