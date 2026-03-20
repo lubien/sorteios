@@ -135,31 +135,111 @@
               <% end %>
             </div>
 
-            <%!-- Delete button (admin only, unclaimed prizes) --%>
+            <%!-- Admin actions: draw + delete (unclaimed prizes only) --%>
             <%= if @admin? && prize.winner_name == nil do %>
-              <button
-                phx-click="remove_prize"
-                phx-value-prize-name={prize.name}
-                data-confirm="Are you sure? This cannot be undone"
-                class="flex-shrink-0 rounded-md p-2 text-gray-400 hover:bg-red-50 hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-red-400"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  class="h-5 w-5"
+              <div class="flex flex-shrink-0 items-center gap-1">
+                <%!-- Draw button / loading indicator --%>
+                <%= cond do %>
+                  <% @drawing_prize_id == prize.id && @loading_winner? -> %>
+                    <span class="animate-pulse text-xs font-medium text-indigo-400">
+                      Drawing…
+                    </span>
+                    <button
+                      phx-click="cancel_draw"
+                      class="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                      aria-label="Cancel draw"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        class="h-4 w-4"
+                      >
+                        <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                      </svg>
+                    </button>
+                  <% is_nil(@drawing_prize_id) -> %>
+                    <button
+                      phx-click="draw_prize"
+                      phx-value-prize-id={prize.id}
+                      class="inline-flex items-center gap-1 rounded-md bg-indigo-50 px-2.5 py-1.5 text-xs font-medium text-indigo-600 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        class="h-3.5 w-3.5"
+                      >
+                        <path d="M10 3.75a2 2 0 10-4 0 2 2 0 004 0zM17.25 4.5a.75.75 0 000-1.5h-5.5a.75.75 0 000 1.5h5.5zM5 3.75a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5a.75.75 0 01.75.75zM4.25 17a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5h1.5zM17.25 17a.75.75 0 000-1.5h-5.5a.75.75 0 000 1.5h5.5zM9 10a.75.75 0 01-.75.75h-5.5a.75.75 0 010-1.5h5.5A.75.75 0 019 10zM17.25 10.75a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5h1.5zM14 10a2 2 0 10-4 0 2 2 0 004 0zM10 16.25a2 2 0 10-4 0 2 2 0 004 0z" />
+                      </svg>
+                      Draw
+                    </button>
+                  <% true -> %>
+                    <%!-- Another prize is being drawn — no button shown --%>
+                <% end %>
+
+                <%!-- Delete button --%>
+                <button
+                  phx-click="remove_prize"
+                  phx-value-prize-name={prize.name}
+                  data-confirm="Are you sure? This cannot be undone"
+                  class="flex-shrink-0 rounded-md p-2 text-gray-400 hover:bg-red-50 hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-red-400"
                 >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
-                  />
-                </svg>
-              </button>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="h-5 w-5"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                    />
+                  </svg>
+                </button>
+              </div>
             <% end %>
           </div>
+
+          <%!-- Drawn person: shown inline below the prize row --%>
+          <%= if @admin? && @drawing_prize_id == prize.id && @random_person && !@loading_winner? do %>
+            <div class="mt-3 flex flex-col gap-3 rounded-lg bg-indigo-50 p-3 sm:flex-row sm:items-center sm:justify-between">
+              <div class="flex min-w-0 items-center gap-3">
+                <img
+                  class="h-9 w-9 flex-shrink-0 rounded-full"
+                  src={gravatar(@random_person.email)}
+                  alt=""
+                />
+                <div class="min-w-0">
+                  <p class="truncate text-sm font-medium text-gray-900">
+                    {@random_person.name}
+                  </p>
+                  <p class="truncate text-xs text-gray-500">{@random_person.email}</p>
+                </div>
+              </div>
+
+              <div class="flex flex-shrink-0 gap-2">
+                <button
+                  phx-click="draw_prize"
+                  phx-value-prize-id={prize.id}
+                  class="flex-1 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:flex-none"
+                >
+                  Re-draw
+                </button>
+                <button
+                  phx-click="confirm_prize_winner"
+                  phx-value-prize-id={prize.id}
+                  data-confirm="Are you sure? This cannot be undone"
+                  class="flex-1 rounded-md border border-transparent bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:flex-none"
+                >
+                  Assign
+                </button>
+              </div>
+            </div>
+          <% end %>
         </li>
       <% end %>
     </ul>
@@ -215,56 +295,5 @@
         </div>
       </div>
     </section>
-  </:right_side>
-
-  <:right_side>
-    <%= if @admin? do %>
-      <section aria-labelledby="section-2-title">
-        <div class="overflow-hidden rounded-lg bg-white shadow">
-          <div class="p-6">
-            <div class="px-4 pb-5">
-              <h3 class="text-lg font-medium leading-6 text-gray-900">Prize drawing</h3>
-
-              <%= if Enum.any?(@available_prizes) do %>
-                <p class="text-sm font-medium text-gray-900">
-                  Eligible users: {@eligible_users_count}
-                </p>
-                <p class="text-sm font-medium text-gray-900">
-                  Chances: {:erlang.float_to_binary(@winning_chance, decimals: 2)}%
-                </p>
-                <button
-                  phx-click="pick_a_random_person"
-                  class="block w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:my-2 sm:w-auto sm:text-sm"
-                >
-                  Draw random person
-                </button>
-
-                <%= if @loading_winner? do %>
-                  <div class="loader">Loading...</div>
-                <% end %>
-              <% else %>
-                <button
-                  disabled
-                  class="block w-full items-center justify-center rounded-md border border-transparent bg-indigo-300 px-4 py-2 font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:my-2 sm:w-auto sm:text-sm"
-                >
-                  No prizes to draw
-                </button>
-              <% end %>
-
-              <%= if @random_person && !@loading_winner? do %>
-                <.user_block user={@random_person} show_email?={@admin?} />
-                <button
-                  phx-click="give_prize_to_random_person"
-                  data-confirm="Are you sure? This cannot be undone"
-                  class="block w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:my-2 sm:w-auto sm:text-sm"
-                >
-                  Give them the next prize
-                </button>
-              <% end %>
-            </div>
-          </div>
-        </div>
-      </section>
-    <% end %>
   </:right_side>
 </SorteiosWeb.Components.two_columns_layout>

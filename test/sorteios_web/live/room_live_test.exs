@@ -335,6 +335,284 @@ defmodule SorteiosWeb.RoomLiveTest do
   end
 
   # ---------------------------------------------------------------------------
+  # Per-prize draw flow
+  # ---------------------------------------------------------------------------
+
+  describe "Show - draw_prize" do
+    setup do
+      room = room_fixture()
+      prize = prize_fixture(room)
+      # Add a second participant so there is someone eligible to draw
+      {:ok, _} =
+        Sorteios.Rooms.create_participant(%{
+          name: "Other Person",
+          email: "other@example.com",
+          room_id: room.id
+        })
+
+      %{room: room, prize: prize}
+    end
+
+    test "admin sees a Draw button on each unclaimed prize", %{conn: conn, room: room} do
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+      assert has_element?(lv, "button[phx-click='draw_prize']")
+    end
+
+    test "non-admin does not see a Draw button", %{conn: conn, room: room} do
+      conn = conn_as_user(conn)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+      refute has_element?(lv, "button[phx-click='draw_prize']")
+    end
+
+    test "admin does not see a Draw button on a claimed prize", %{conn: conn, room: room} do
+      claimed =
+        prize_fixture(room, %{
+          name: "Claimed",
+          winner_name: "Jane Doe",
+          winner_email: "jane@example.com"
+        })
+
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      refute has_element?(
+               lv,
+               "button[phx-click='draw_prize'][phx-value-prize-id='#{claimed.id}']"
+             )
+    end
+
+    test "clicking Draw shows a loading indicator on that prize", %{
+      conn: conn,
+      room: room,
+      prize: prize
+    } do
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      lv
+      |> element("button[phx-click='draw_prize'][phx-value-prize-id='#{prize.id}']")
+      |> render_click()
+
+      assert render(lv) =~ "Drawing"
+    end
+
+    test "clicking Draw hides the Draw button while loading", %{
+      conn: conn,
+      room: room,
+      prize: prize
+    } do
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      lv
+      |> element("button[phx-click='draw_prize'][phx-value-prize-id='#{prize.id}']")
+      |> render_click()
+
+      refute has_element?(lv, "button[phx-click='draw_prize'][phx-value-prize-id='#{prize.id}']")
+    end
+
+    test "other prizes do not show their Draw button while one is loading", %{
+      conn: conn,
+      room: room,
+      prize: prize
+    } do
+      other = prize_fixture(room, %{name: "Other Prize"})
+
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      lv
+      |> element("button[phx-click='draw_prize'][phx-value-prize-id='#{prize.id}']")
+      |> render_click()
+
+      refute has_element?(lv, "button[phx-click='draw_prize'][phx-value-prize-id='#{other.id}']")
+    end
+
+    test "after the delay a drawn person's name appears inline", %{
+      conn: conn,
+      room: room,
+      prize: prize
+    } do
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      lv
+      |> element("button[phx-click='draw_prize'][phx-value-prize-id='#{prize.id}']")
+      |> render_click()
+
+      send(lv.pid, {:run_search, prize.id})
+
+      html = render(lv)
+      assert html =~ "Other Person" or html =~ "Admin User"
+    end
+
+    test "after the delay Assign and Re-draw buttons appear", %{
+      conn: conn,
+      room: room,
+      prize: prize
+    } do
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      lv
+      |> element("button[phx-click='draw_prize'][phx-value-prize-id='#{prize.id}']")
+      |> render_click()
+
+      send(lv.pid, {:run_search, prize.id})
+
+      assert has_element?(
+               lv,
+               "button[phx-click='confirm_prize_winner'][phx-value-prize-id='#{prize.id}']"
+             )
+
+      assert has_element?(lv, "button[phx-click='draw_prize'][phx-value-prize-id='#{prize.id}']")
+    end
+
+    test "stale :run_search message for a cancelled draw is ignored", %{
+      conn: conn,
+      room: room,
+      prize: prize
+    } do
+      _other = prize_fixture(room, %{name: "Other Prize"})
+
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      # Start drawing prize, then immediately start drawing the other prize
+      lv
+      |> element("button[phx-click='draw_prize'][phx-value-prize-id='#{prize.id}']")
+      |> render_click()
+
+      lv |> element("button[phx-click='cancel_draw']") |> render_click()
+
+      # Deliver the stale message for the first prize — should be a no-op
+      send(lv.pid, {:run_search, prize.id})
+
+      refute has_element?(lv, "button[phx-click='confirm_prize_winner']")
+    end
+  end
+
+  describe "Show - confirm_prize_winner" do
+    setup do
+      room = room_fixture()
+      prize = prize_fixture(room)
+
+      {:ok, _} =
+        Sorteios.Rooms.create_participant(%{
+          name: "Other Person",
+          email: "other@example.com",
+          room_id: room.id
+        })
+
+      %{room: room, prize: prize}
+    end
+
+    test "confirming assigns the drawn person to the prize", %{
+      conn: conn,
+      room: room,
+      prize: prize
+    } do
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      lv
+      |> element("button[phx-click='draw_prize'][phx-value-prize-id='#{prize.id}']")
+      |> render_click()
+
+      send(lv.pid, {:run_search, prize.id})
+      render(lv)
+
+      lv
+      |> element("button[phx-click='confirm_prize_winner'][phx-value-prize-id='#{prize.id}']")
+      |> render_click()
+
+      updated = Rooms.get_prize!(prize.id)
+      assert updated.winner_name != nil
+    end
+
+    test "confirming removes the inline expansion and shows winner on the row", %{
+      conn: conn,
+      room: room,
+      prize: prize
+    } do
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      lv
+      |> element("button[phx-click='draw_prize'][phx-value-prize-id='#{prize.id}']")
+      |> render_click()
+
+      send(lv.pid, {:run_search, prize.id})
+      render(lv)
+
+      lv
+      |> element("button[phx-click='confirm_prize_winner'][phx-value-prize-id='#{prize.id}']")
+      |> render_click()
+
+      refute has_element?(lv, "button[phx-click='confirm_prize_winner']")
+    end
+
+    test "confirming restores Draw buttons for other unclaimed prizes", %{
+      conn: conn,
+      room: room,
+      prize: prize
+    } do
+      other = prize_fixture(room, %{name: "Other Prize"})
+
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      lv
+      |> element("button[phx-click='draw_prize'][phx-value-prize-id='#{prize.id}']")
+      |> render_click()
+
+      send(lv.pid, {:run_search, prize.id})
+      render(lv)
+
+      lv
+      |> element("button[phx-click='confirm_prize_winner'][phx-value-prize-id='#{prize.id}']")
+      |> render_click()
+
+      assert has_element?(lv, "button[phx-click='draw_prize'][phx-value-prize-id='#{other.id}']")
+    end
+  end
+
+  describe "Show - cancel_draw" do
+    setup do
+      room = room_fixture()
+      prize = prize_fixture(room)
+      %{room: room, prize: prize}
+    end
+
+    test "cancel_draw restores the Draw button", %{conn: conn, room: room, prize: prize} do
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      lv
+      |> element("button[phx-click='draw_prize'][phx-value-prize-id='#{prize.id}']")
+      |> render_click()
+
+      lv |> element("button[phx-click='cancel_draw']") |> render_click()
+
+      assert has_element?(lv, "button[phx-click='draw_prize'][phx-value-prize-id='#{prize.id}']")
+    end
+
+    test "cancel_draw hides the loading indicator", %{conn: conn, room: room, prize: prize} do
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      lv
+      |> element("button[phx-click='draw_prize'][phx-value-prize-id='#{prize.id}']")
+      |> render_click()
+
+      lv |> element("button[phx-click='cancel_draw']") |> render_click()
+
+      refute render(lv) =~ "Drawing"
+    end
+  end
+
+  # ---------------------------------------------------------------------------
   # Inline prize name editing
   # ---------------------------------------------------------------------------
 

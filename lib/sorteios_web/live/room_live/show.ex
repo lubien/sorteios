@@ -41,7 +41,8 @@ defmodule SorteiosWeb.RoomLive.Show do
           prizes: [],
           invite_image: invite_image,
           random_person: nil,
-          editing_prize_id: nil
+          editing_prize_id: nil,
+          drawing_prize_id: nil
         )
 
       {:ok,
@@ -166,44 +167,46 @@ defmodule SorteiosWeb.RoomLive.Show do
     end
   end
 
-  def handle_event("pick_a_random_person", _params, socket) do
-    Process.send_after(self(), :run_search, 3000)
+  def handle_event("draw_prize", %{"prize-id" => prize_id}, socket) do
+    Process.send_after(self(), {:run_search, prize_id}, 3000)
 
-    socket =
-      assign(
-        socket,
-        randon_person: [],
-        loading_winner?: true
-      )
-
-    {:noreply, socket}
+    {:noreply,
+     assign(socket,
+       drawing_prize_id: prize_id,
+       loading_winner?: true,
+       random_person: nil
+     )}
   end
 
-  def handle_event("give_prize_to_random_person", _params, socket) do
-    available_prizes = socket.assigns.available_prizes
+  def handle_event("confirm_prize_winner", %{"prize-id" => prize_id}, socket) do
+    prize = Enum.find(socket.assigns.available_prizes, &(&1.id == prize_id))
 
-    if Enum.any?(available_prizes) do
-      {:noreply, award_prize(socket, List.first(available_prizes))}
+    if prize && socket.assigns.random_person do
+      {:noreply, award_prize(socket, prize)}
     else
-      {:noreply, put_flash(socket, :error, "Sem premios para sortear")}
+      {:noreply, put_flash(socket, :error, "No prize or winner found")}
     end
   end
 
+  def handle_event("cancel_draw", _params, socket) do
+    {:noreply, assign(socket, drawing_prize_id: nil, loading_winner?: false, random_person: nil)}
+  end
+
   @impl true
-  def handle_info(:run_search, socket) do
-    random_person =
-      socket.assigns.users
-      |> Enum.reject(&(&1.email == socket.assigns.current_user.email))
-      |> Enum.random()
+  def handle_info({:run_search, prize_id}, socket) do
+    if socket.assigns.drawing_prize_id == prize_id do
+      eligible =
+        socket.assigns.users
+        |> Enum.reject(&(&1.email == socket.assigns.current_user.email))
 
-    socket =
-      assign(
-        socket,
-        random_person: random_person,
-        loading_winner?: false
-      )
-
-    {:noreply, socket}
+      if Enum.empty?(eligible) do
+        {:noreply, assign(socket, loading_winner?: false, drawing_prize_id: nil)}
+      else
+        {:noreply, assign(socket, random_person: Enum.random(eligible), loading_winner?: false)}
+      end
+    else
+      {:noreply, socket}
+    end
   end
 
   def handle_info(%{event: "presence_diff"}, socket) do
@@ -244,8 +247,8 @@ defmodule SorteiosWeb.RoomLive.Show do
 
         socket
         |> assign(:random_person, nil)
-
-        # todo: tratar o erro
+        |> assign(:drawing_prize_id, nil)
+        |> reload_prizes()
     end
   end
 
