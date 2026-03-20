@@ -1,5 +1,6 @@
 defmodule SorteiosWeb.ExportController do
   use SorteiosWeb, :controller
+  plug :put_layout, false
 
   def create_qr_code(conn, %{"room_id" => room_id}) do
     invite_image =

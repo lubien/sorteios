@@ -3,6 +3,7 @@ defmodule SorteiosWeb.RoomLive.Show do
 
   alias Phoenix.PubSub
   alias Sorteios.Rooms
+  alias Phoenix.LiveView.JS
   alias Sorteios.Rooms.Room
   alias Sorteios.Rooms.Prize
   alias SorteiosWeb.Presence
@@ -25,7 +26,7 @@ defmodule SorteiosWeb.RoomLive.Show do
       invite_image =
         Routes.room_show_url(socket, :show, id)
         |> EQRCode.encode()
-        |> EQRCode.svg(width: 240)
+        |> EQRCode.svg(width: 400)
 
       socket =
         assign(
@@ -40,7 +41,8 @@ defmodule SorteiosWeb.RoomLive.Show do
           prizes: [],
           invite_image: invite_image,
           random_person: nil,
-          count_prizes: 1
+          editing_prize_id: nil,
+          drawing_prize_id: nil
         )
 
       {:ok,
@@ -64,18 +66,72 @@ defmodule SorteiosWeb.RoomLive.Show do
   end
 
   @impl true
+  def handle_event("start_edit_prize", %{"prize-id" => id}, socket) do
+    {:noreply, assign(socket, :editing_prize_id, id)}
+  end
+
+  def handle_event("cancel_edit_prize", _params, socket) do
+    {:noreply, assign(socket, :editing_prize_id, nil)}
+  end
+
+  def handle_event("save_prize_name", %{"value" => name, "prize-id" => id}, socket) do
+    prize = Rooms.get_prize!(id)
+    name = String.trim(name)
+
+    if name == "" or name == prize.name do
+      {:noreply, assign(socket, :editing_prize_id, nil)}
+    else
+      case Rooms.update_prize(prize, %{name: name}) do
+        {:ok, _prize} ->
+          PubSub.broadcast!(Sorteios.PubSub, topic(socket), "reload_prizes")
+
+          {:noreply,
+           socket
+           |> assign(:editing_prize_id, nil)
+           |> reload_prizes()}
+
+        {:error, %Ecto.Changeset{} = changeset} ->
+          {:noreply, assign(socket, changeset: changeset)}
+      end
+    end
+  end
+
+  @impl true
+  def handle_event("quick_add_prize", _params, socket) do
+    count = length(socket.assigns.prizes) + 1
+    name = "#{ordinal(count)} Prize"
+    prize_params = %{"name" => name, "room_id" => socket.assigns.id}
+
+    case Rooms.create_prize(prize_params) do
+      {:ok, _prize} ->
+        PubSub.broadcast!(Sorteios.PubSub, topic(socket), "reload_prizes")
+
+        {:noreply,
+         socket
+         |> reload_prizes()
+         |> put_flash(:info, "Prize created successfully")}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, changeset: changeset)}
+    end
+  end
+
+  @impl true
   def handle_event("create_prize", %{"prize" => prize_params}, socket) do
     prize_params = Map.put(prize_params, "room_id", socket.assigns.id)
 
     quantity = String.to_integer(prize_params["quantity"])
 
     for count <- 1..quantity do
-      name = if quantity == 1 do
-        prize_params["name"]
-      else
-        "#{prize_params["name"]} ##{count}"
-      end
+      name =
+        if quantity == 1 do
+          prize_params["name"]
+        else
+          "#{prize_params["name"]} ##{count}"
+        end
+
       updated_params = Map.put(prize_params, "name", name)
+
       case Rooms.create_prize(updated_params) do
         {:ok, _prize} ->
           PubSub.broadcast!(Sorteios.PubSub, topic(socket), "reload_prizes")
@@ -88,6 +144,24 @@ defmodule SorteiosWeb.RoomLive.Show do
         {:error, %Ecto.Changeset{} = changeset} ->
           {:noreply, assign(socket, changeset: changeset)}
       end
+    end
+  end
+
+  def handle_event("clone_prize", %{"prize-id" => prize_id}, socket) do
+    prize = Rooms.get_prize!(prize_id)
+    prize_params = %{"name" => prize.name, "room_id" => socket.assigns.id}
+
+    case Rooms.create_prize(prize_params) do
+      {:ok, _prize} ->
+        PubSub.broadcast!(Sorteios.PubSub, topic(socket), "reload_prizes")
+
+        {:noreply,
+         socket
+         |> reload_prizes()
+         |> put_flash(:info, "Prize cloned successfully")}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, changeset: changeset)}
     end
   end
 
@@ -111,46 +185,80 @@ defmodule SorteiosWeb.RoomLive.Show do
     end
   end
 
-  def handle_event("pick_a_random_person", _params, socket) do
-    Process.send_after(self(), :run_search, 3000)
+  def handle_event("draw_prize", %{"prize-id" => prize_id}, socket) do
+    Process.send_after(self(), {:run_search, prize_id}, 3000)
 
-    socket =
-      assign(
-        socket,
-        randon_person: [],
-        loading_winner?: true
-      )
+    PubSub.broadcast_from!(Sorteios.PubSub, self(), topic(socket), %{
+      event: "draw_started",
+      prize_id: prize_id
+    })
 
-    {:noreply, socket}
+    {:noreply,
+     assign(socket,
+       drawing_prize_id: prize_id,
+       loading_winner?: true,
+       random_person: nil
+     )}
   end
 
-  def handle_info(:run_search, socket) do
-    random_person =
-      socket.assigns.users
-      |> Enum.reject(&(&1.email == socket.assigns.current_user.email))
-      |> Enum.random()
+  def handle_event("confirm_prize_winner", %{"prize-id" => prize_id}, socket) do
+    prize = Enum.find(socket.assigns.available_prizes, &(&1.id == prize_id))
 
-    socket =
-      assign(
-        socket,
-        random_person: random_person,
-        loading_winner?: false
-      )
-
-    {:noreply, socket}
-  end
-
-  def handle_event("give_prize_to_random_person", _params, socket) do
-    available_prizes = socket.assigns.available_prizes
-
-    if Enum.any?(available_prizes) do
-      {:noreply, award_prize(socket, List.first(available_prizes))}
+    if prize && socket.assigns.random_person do
+      {:noreply, award_prize(socket, prize)}
     else
-      {:noreply, put_flash(socket, :error, "Sem premios para sortear")}
+      {:noreply, put_flash(socket, :error, "No prize or winner found")}
     end
   end
 
+  def handle_event("cancel_draw", _params, socket) do
+    PubSub.broadcast_from!(Sorteios.PubSub, self(), topic(socket), %{event: "draw_cancelled"})
+    {:noreply, assign(socket, drawing_prize_id: nil, loading_winner?: false, random_person: nil)}
+  end
+
   @impl true
+  def handle_info({:run_search, prize_id}, socket) do
+    if socket.assigns.drawing_prize_id == prize_id do
+      eligible =
+        socket.assigns.users
+        |> Enum.reject(&(&1.email == socket.assigns.current_user.email))
+
+      if Enum.empty?(eligible) do
+        PubSub.broadcast_from!(Sorteios.PubSub, self(), topic(socket), %{event: "draw_cancelled"})
+        {:noreply, assign(socket, loading_winner?: false, drawing_prize_id: nil)}
+      else
+        random_person = Enum.random(eligible)
+
+        PubSub.broadcast_from!(Sorteios.PubSub, self(), topic(socket), %{
+          event: "draw_result",
+          prize_id: prize_id,
+          person: random_person
+        })
+
+        {:noreply, assign(socket, random_person: random_person, loading_winner?: false)}
+      end
+    else
+      {:noreply, socket}
+    end
+  end
+
+  def handle_info(%{event: "draw_started", prize_id: prize_id}, socket) do
+    {:noreply,
+     assign(socket,
+       drawing_prize_id: prize_id,
+       loading_winner?: true,
+       random_person: nil
+     )}
+  end
+
+  def handle_info(%{event: "draw_result", person: person}, socket) do
+    {:noreply, assign(socket, random_person: person, loading_winner?: false)}
+  end
+
+  def handle_info(%{event: "draw_cancelled"}, socket) do
+    {:noreply, assign(socket, drawing_prize_id: nil, loading_winner?: false, random_person: nil)}
+  end
+
   def handle_info(%{event: "presence_diff"}, socket) do
     {:noreply, reload_users(socket)}
   end
@@ -159,6 +267,9 @@ defmodule SorteiosWeb.RoomLive.Show do
     socket =
       socket
       |> reload_prizes()
+      |> assign(:drawing_prize_id, nil)
+      |> assign(:random_person, nil)
+      |> assign(:loading_winner?, false)
       |> put_flash(:success, "#{winner.name} ganhou #{prize.name}")
 
     {:noreply, socket}
@@ -189,8 +300,8 @@ defmodule SorteiosWeb.RoomLive.Show do
 
         socket
         |> assign(:random_person, nil)
-
-        # todo: tratar o erro
+        |> assign(:drawing_prize_id, nil)
+        |> reload_prizes()
     end
   end
 
@@ -227,6 +338,20 @@ defmodule SorteiosWeb.RoomLive.Show do
     |> assign(:available_prizes, Enum.filter(prizes, &(&1.winner_name == nil)))
   end
 
+  defp ordinal(1), do: "1st"
+  defp ordinal(2), do: "2nd"
+  defp ordinal(3), do: "3rd"
+  defp ordinal(n) when n in 4..20, do: "#{n}th"
+
+  defp ordinal(n) do
+    case rem(n, 10) do
+      1 -> "#{n}st"
+      2 -> "#{n}nd"
+      3 -> "#{n}rd"
+      _ -> "#{n}th"
+    end
+  end
+
   def gravatar(email) do
     hash =
       email
@@ -247,9 +372,9 @@ defmodule SorteiosWeb.RoomLive.Show do
       <div class="min-w-0 flex-1">
         <a href="#" class="focus:outline-none">
           <span class="absolute inset-0" aria-hidden="true"></span>
-          <p class="text-sm font-medium text-gray-900"><%= @user.name %></p>
+          <p class="text-sm font-medium text-gray-900">{@user.name}</p>
           <%= if @show_email? do %>
-            <p class="truncate text-sm text-gray-500"><%= @user.email %></p>
+            <p class="truncate text-sm text-gray-500">{@user.email}</p>
           <% end %>
         </a>
       </div>

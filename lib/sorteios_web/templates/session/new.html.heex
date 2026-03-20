@@ -1,4 +1,4 @@
-<.form let={f} for={@changeset} action={Routes.session_path(@conn, :create)}>
+<.form :let={f} for={@changeset} action={Routes.session_path(@conn, :create)}>
   <SorteiosWeb.Components.auth_layout>
     <div class="space-y-6">
       <%= if @changeset.action do %>
@@ -8,51 +8,51 @@
       <% end %>
 
       <div>
-        <%= label(f, :name, class: "block text-sm font-medium text-gray-700") %>
+        {label(f, :name, class: "block text-sm font-medium text-gray-700")}
         <div class="mt-1">
-          <%= text_input(f, :name,
+          {text_input(f, :name,
             class:
               "block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-          ) %>
+          )}
         </div>
-        <%= error_tag(f, :name) %>
+        {error_tag(f, :name)}
       </div>
 
       <div>
-        <%= label(f, :email, class: "block text-sm font-medium text-gray-700") %>
+        {label(f, :email, class: "block text-sm font-medium text-gray-700")}
         <div class="mt-1">
-          <%= email_input(f, :email,
+          {email_input(f, :email,
             class:
               "block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-          ) %>
+          )}
         </div>
-        <%= error_tag(f, :email) %>
+        {error_tag(f, :email)}
       </div>
 
       <div>
-        <%= label(f, :room_id, "*Room ID", class: "block text-sm font-medium text-gray-700") %>
+        {label(f, :room_id, "*Room ID", class: "block text-sm font-medium text-gray-700")}
         <div class="mt-1">
-          <%= text_input(f, :room_id,
+          {text_input(f, :room_id,
             class:
               "block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-          ) %>
+          )}
         </div>
-        <%= error_tag(f, :room_id) %>
+        {error_tag(f, :room_id)}
       </div>
 
       <div class="flex flex-row gap-2">
-        <%= submit("Join room",
+        {submit("Join room",
           name: "action",
           value: "join_room",
           class:
             "flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-        ) %>
-        <%= submit("Create a room",
+        )}
+        {submit("Create a room",
           name: "action",
           value: "create_room_user",
           class:
             "flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-        ) %>
+        )}
       </div>
       <span class="bg-white text-sm text-gray-400">*If you already have a invite</span>
 
@@ -67,10 +67,10 @@
         </div>
 
         <div class="mt-6">
-          <%= submit("Instant room",
+          {submit("Instant room",
             class:
               "flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-          ) %>
+          )}
         </div>
       </div>
     </div>

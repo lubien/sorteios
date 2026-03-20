@@ -19,10 +19,12 @@ defmodule SorteiosWeb do
 
   def controller do
     quote do
-      use Phoenix.Controller, namespace: SorteiosWeb
+      use Phoenix.Controller, formats: [html: "HTML"]
+
+      plug :put_layout, html: {SorteiosWeb.LayoutView, :app}
 
       import Plug.Conn
-      import SorteiosWeb.Gettext
+      use Gettext, backend: SorteiosWeb.Gettext
       alias SorteiosWeb.Router.Helpers, as: Routes
     end
   end
@@ -34,8 +36,8 @@ defmodule SorteiosWeb do
         namespace: SorteiosWeb
 
       # Import convenience functions from controllers
-      import Phoenix.Controller,
-        only: [get_flash: 1, get_flash: 2, view_module: 1, view_template: 1]
+      import Phoenix.Controller, only: [view_module: 1, view_template: 1]
+      import Phoenix.Flash
 
       # Include shared imports and aliases for views
       unquote(view_helpers())
@@ -45,7 +47,7 @@ defmodule SorteiosWeb do
   def live_view do
     quote do
       use Phoenix.LiveView,
-        layout: {SorteiosWeb.LayoutView, "live.html"}
+        layout: {SorteiosWeb.LayoutView, :live}
 
       unquote(view_helpers())
     end
@@ -54,6 +56,18 @@ defmodule SorteiosWeb do
   def live_component do
     quote do
       use Phoenix.LiveComponent
+
+      unquote(view_helpers())
+    end
+  end
+
+  def html do
+    quote do
+      use Phoenix.Component
+
+      # Import convenience functions from controllers
+      import Phoenix.Controller, only: [view_module: 1, view_template: 1]
+      import Phoenix.Flash
 
       unquote(view_helpers())
     end
@@ -80,24 +94,26 @@ defmodule SorteiosWeb do
   def channel do
     quote do
       use Phoenix.Channel
-      import SorteiosWeb.Gettext
+      use Gettext, backend: SorteiosWeb.Gettext
     end
   end
 
   defp view_helpers do
     quote do
       # Use all HTML functionality (forms, tags, etc)
-      use Phoenix.HTML
+      use PhoenixHTMLHelpers
 
-      # Import LiveView and .heex helpers (live_render, live_patch, <.form>, etc)
-      import Phoenix.LiveView.Helpers
+      # Import Phoenix.Component for .form, .link, .live_title and other components
+      import Phoenix.Component
+
+      # Import LiveView helpers
       import SorteiosWeb.LiveHelpers
 
       # Import basic rendering functionality (render, render_layout, etc)
       import Phoenix.View
 
       import SorteiosWeb.ErrorHelpers
-      import SorteiosWeb.Gettext
+      use Gettext, backend: SorteiosWeb.Gettext
       alias SorteiosWeb.Router.Helpers, as: Routes
     end
   end

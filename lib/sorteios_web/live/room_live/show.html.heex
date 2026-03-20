@@ -1,262 +1,523 @@
-<SorteiosWeb.Components.two_columns_layout>
-  <div class="overflow-hidden bg-white shadow sm:rounded-md">
-    <ul role="list" class="divide-y divide-gray-200">
-      <%= if Enum.empty?(@prizes) do %>
-        <button
-          type="button"
-          class="relative block w-full rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-            stroke="currentColor"
-            class="mx-auto h-12 w-12 text-gray-400"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
-            />
-          </svg>
-
-          <span class="mt-2 block text-sm font-medium text-gray-900">
-            Wait for the admin to create a prize
-          </span>
-        </button>
-      <% end %>
-
-      <%= for prize <- @prizes do %>
-        <li>
-          <a href="#" class="block hover:bg-gray-50">
-            <div class="flex items-center px-4 py-4 sm:px-6">
-              <div class="flex min-w-0 flex-1 items-center">
-                <div class="flex-shrink-0">
-                  <%= if prize.winner_name do %>
-                    <img
-                      class="h-12 w-12 rounded-full"
-                      src={gravatar(prize.winner_email || "")}
-                      alt=""
-                    />
-                  <% else %>
-                    <div class="h-12 w-12 rounded-full bg-gray-200 border-2 border-gray-400 border-dotted">
-                    </div>
-                  <% end %>
-                </div>
-                <div class="min-w-0 flex-1 px-4 md:grid md:grid-cols-2 md:gap-4 items-center">
-                  <div>
-                    <p class="truncate text-md font-medium text-indigo-600"><%= prize.name %></p>
-                    <p class="mt-2 flex items-center text-sm text-gray-500"></p>
-                  </div>
-                  <div class="mt-4 md:mt-0"> 
-                    <%= if prize.winner_name do %>
-                      <p class="flex items-center text-sm text-gray-500">
-                        <!-- Heroicon name: mini/check-circle -->
-                        <svg
-                          class="mr-1.5 h-5 w-5 flex-shrink-0 text-green-400"
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                          aria-hidden="true"
-                        >
-                          <path
-                            fill-rule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-                            clip-rule="evenodd"
-                          />
-                        </svg>
-                        <%= prize.winner_name %>
-                      </p>
-                      <%= if prize.winner_email != nil and @admin? do %>
-                        <p class="mt-2 text-sm text-gray-900 flex items-center">
-                          <!-- Heroicon name: mini/envelope -->
-                          <svg
-                            class="mr-1.5 h-5 w-5 flex-shrink-0 text-gray-400"
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                            aria-hidden="true"
-                          >
-                            <path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z" />
-                            <path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z" />
-                          </svg>
-
-                          <span class="truncate"><%= prize.winner_email %></span>
-                        </p>
-                      <% end %>
-                    <% else %>
-                      <p class="mt-2 text-sm text-gray-900 flex items-center">
-                        No winner yet
-                      </p>
-                    <% end %>
-                  </div>
-                </div>
-              </div>
-              <%= if @admin? && prize.winner_name == nil do %>
-                <button
-                  phx-click="remove_prize"
-                  phx-value-prize-name={prize.name}
-                  data-confirm="Are you sure? This cannot be undone"
-                  class="block w-full px-4 py-2 font-medium sm:my-2 sm:w-auto sm:text-sm"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                  </svg>
-                </button>
-              <% end %>
-            </div>
-          </a>
-        </li>
-      <% end %>
-    </ul>
-  </div>
-
-  <div class="border-b border-gray-200 py-5">
-    <h3 class="text-lg font-medium leading-6 text-gray-900">Participants</h3>
-  </div>
-
-  <div class="mt-6">
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <%= for user <- @users do %>
-        <.user_block user={user} show_email?={@admin?} />
-      <% end %>
+<%!-- ── Full-screen drawing overlay ─────────────────────────────────── --%>
+<%= if @drawing_prize_id != nil do %>
+  <% current_prize = Enum.find(@prizes, &(&1.id == @drawing_prize_id)) %>
+  <div
+    class="draw-overlay-enter fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden"
+    style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 45%, #4c1d95 100%)"
+  >
+    <%!-- Decorative sparkle dots --%>
+    <div class="pointer-events-none absolute inset-0 overflow-hidden">
+      <div class="star-spin absolute top-10 left-16 h-1.5 w-1.5 rounded-full bg-indigo-400 opacity-50" style="animation-delay:0s"></div>
+      <div class="star-spin absolute top-24 right-20 h-1 w-1 rounded-full bg-purple-300 opacity-60" style="animation-delay:0.7s"></div>
+      <div class="star-spin absolute top-1/3 left-10 h-2 w-2 rounded-full bg-indigo-300 opacity-30" style="animation-delay:1.4s"></div>
+      <div class="star-spin absolute top-1/4 right-14 h-1.5 w-1.5 rounded-full bg-white opacity-20" style="animation-delay:2.1s"></div>
+      <div class="star-spin absolute bottom-28 left-24 h-1 w-1 rounded-full bg-purple-400 opacity-40" style="animation-delay:0.4s"></div>
+      <div class="star-spin absolute bottom-36 right-16 h-2 w-2 rounded-full bg-indigo-200 opacity-25" style="animation-delay:1.1s"></div>
+      <div class="star-spin absolute top-1/2 left-1/4 h-1 w-1 rounded-full bg-white opacity-15" style="animation-delay:1.8s"></div>
+      <div class="star-spin absolute top-2/3 right-1/4 h-1.5 w-1.5 rounded-full bg-purple-300 opacity-35" style="animation-delay:0.9s"></div>
     </div>
+
+    <%!-- Close / cancel (admin only) --%>
+    <%= if @admin? do %>
+      <button
+        phx-click="cancel_draw"
+        class="absolute right-5 top-5 rounded-full p-2 text-indigo-300 hover:bg-indigo-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400"
+        aria-label="Cancel draw"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-6 w-6">
+          <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+        </svg>
+      </button>
+    <% end %>
+
+    <p class="mb-1 text-xs font-semibold uppercase tracking-widest text-indigo-400">Drawing for</p>
+    <h2 class="mb-8 text-center text-2xl font-bold text-white sm:text-3xl">
+      {current_prize && current_prize.name}
+    </h2>
+
+    <%= if @loading_winner? do %>
+      <div class="relative h-72 w-52">
+        <svg viewBox="0 0 200 290" xmlns="http://www.w3.org/2000/svg" class="bottle-wobble absolute inset-0 h-full w-full" style="transform-origin: bottom center">
+          <ellipse cx="100" cy="282" rx="52" ry="8" fill="rgba(99,102,241,0.22)" />
+          <path d="M32,135 C16,138 14,155 14,172 L14,250 C14,265 24,272 38,272 L162,272 C176,272 186,265 186,250 L186,172 C186,155 184,138 168,135 Z" fill="rgba(99,102,241,0.14)" stroke="rgba(165,180,252,0.5)" stroke-width="2" />
+          <path d="M80,90 L80,137 L120,137 L120,90 Z" fill="rgba(99,102,241,0.2)" stroke="rgba(165,180,252,0.6)" stroke-width="2" />
+          <ellipse cx="100" cy="90" rx="21" ry="7" fill="rgba(129,140,248,0.3)" stroke="rgba(165,180,252,0.8)" stroke-width="2" />
+          <path d="M26,158 Q22,198 26,232" stroke="rgba(255,255,255,0.1)" stroke-width="5" stroke-linecap="round" fill="none" />
+          <path d="M40,148 Q36,172 38,200" stroke="rgba(255,255,255,0.07)" stroke-width="3" stroke-linecap="round" fill="none" />
+          <g class="ticket-float-1">
+            <rect x="42" y="170" width="38" height="26" rx="4" fill="rgba(254,240,138,0.92)" stroke="rgba(202,138,4,0.5)" stroke-width="1.2" transform="rotate(-15,61,183)" />
+            <line x1="49" y1="179" x2="73" y2="179" stroke="rgba(120,80,0,0.22)" stroke-width="1" transform="rotate(-15,61,183)" />
+            <line x1="49" y1="185" x2="68" y2="185" stroke="rgba(120,80,0,0.16)" stroke-width="1" transform="rotate(-15,61,183)" />
+          </g>
+          <g class="ticket-float-2">
+            <rect x="118" y="160" width="38" height="26" rx="4" fill="rgba(254,240,138,0.88)" stroke="rgba(202,138,4,0.5)" stroke-width="1.2" transform="rotate(12,137,173)" />
+            <line x1="125" y1="169" x2="149" y2="169" stroke="rgba(120,80,0,0.22)" stroke-width="1" transform="rotate(12,137,173)" />
+            <line x1="125" y1="175" x2="143" y2="175" stroke="rgba(120,80,0,0.16)" stroke-width="1" transform="rotate(12,137,173)" />
+          </g>
+          <g class="ticket-float-3">
+            <rect x="80" y="207" width="38" height="26" rx="4" fill="rgba(196,181,253,0.88)" stroke="rgba(124,58,237,0.45)" stroke-width="1.2" transform="rotate(5,99,220)" />
+            <line x1="87" y1="216" x2="111" y2="216" stroke="rgba(76,29,149,0.22)" stroke-width="1" transform="rotate(5,99,220)" />
+            <line x1="87" y1="222" x2="107" y2="222" stroke="rgba(76,29,149,0.16)" stroke-width="1" transform="rotate(5,99,220)" />
+          </g>
+          <g class="ticket-float-2" style="animation-delay:0.5s">
+            <rect x="48" y="230" width="34" height="22" rx="3" fill="rgba(254,215,170,0.85)" stroke="rgba(234,88,12,0.35)" stroke-width="1" transform="rotate(-8,65,241)" />
+          </g>
+          <g class="ticket-float-1" style="animation-delay:0.9s">
+            <rect x="120" y="234" width="34" height="22" rx="3" fill="rgba(251,207,232,0.85)" stroke="rgba(219,39,119,0.35)" stroke-width="1" transform="rotate(10,137,245)" />
+          </g>
+        </svg>
+        <svg viewBox="0 0 200 290" xmlns="http://www.w3.org/2000/svg" class="absolute inset-0 h-full w-full">
+          <g class="hand-reaching" style="transform-origin: 100px 0px">
+            <rect x="84" y="-55" width="32" height="58" rx="14" fill="rgba(253,186,116,0.96)" stroke="rgba(234,88,12,0.2)" stroke-width="1.5" />
+            <path d="M70,0 L130,0 Q140,0 140,12 L140,42 Q140,54 128,54 L72,54 Q60,54 60,42 L60,12 Q60,0 70,0 Z" fill="rgba(253,186,116,0.96)" stroke="rgba(234,88,12,0.2)" stroke-width="1.5" />
+            <path d="M60,16 Q48,14 44,25 Q40,36 48,44 L60,44 Z" fill="rgba(253,186,116,0.96)" stroke="rgba(234,88,12,0.2)" stroke-width="1.5" />
+            <rect x="68" y="50" width="13" height="40" rx="6" fill="rgba(253,186,116,0.96)" stroke="rgba(234,88,12,0.2)" stroke-width="1.5" />
+            <rect x="85" y="50" width="13" height="46" rx="6" fill="rgba(253,186,116,0.96)" stroke="rgba(234,88,12,0.2)" stroke-width="1.5" />
+            <rect x="102" y="50" width="13" height="42" rx="6" fill="rgba(253,186,116,0.96)" stroke="rgba(234,88,12,0.2)" stroke-width="1.5" />
+            <rect x="119" y="50" width="11" height="34" rx="5" fill="rgba(253,186,116,0.96)" stroke="rgba(234,88,12,0.2)" stroke-width="1.5" />
+          </g>
+        </svg>
+      </div>
+      <p class="mt-6 animate-pulse text-sm font-medium text-indigo-300">Drawing…</p>
+    <% else %>
+      <div class="winner-enter flex flex-col items-center px-6 text-center">
+        <div class="winner-glow mb-5 rounded-full">
+          <img
+            class="h-28 w-28 rounded-full border-4 border-indigo-400 sm:h-32 sm:w-32"
+            src={gravatar(@random_person.email)}
+            alt={@random_person.name}
+          />
+        </div>
+        <h3 class="text-3xl font-bold text-white sm:text-4xl">{@random_person.name}</h3>
+        <p class="mt-1 text-indigo-300">{@random_person.email}</p>
+        <%= if @admin? do %>
+          <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+            <button
+              phx-click="draw_prize"
+              phx-value-prize-id={@drawing_prize_id}
+              class="rounded-xl border-2 border-indigo-400 bg-transparent px-8 py-3 font-semibold text-indigo-200 hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            >
+              Re-draw
+            </button>
+            <button
+              phx-click="confirm_prize_winner"
+              phx-value-prize-id={@drawing_prize_id}
+              data-confirm="Are you sure? This cannot be undone"
+              class="rounded-xl border-2 border-transparent bg-indigo-500 px-8 py-3 font-semibold text-white hover:bg-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            >
+              🎉 Assign prize
+            </button>
+          </div>
+        <% else %>
+          <p class="mt-6 text-sm text-indigo-400">Waiting for the admin to assign the prize…</p>
+        <% end %>
+      </div>
+    <% end %>
   </div>
-  <:right_side>
-    <.user_block user={@current_user} show_email?={true} />
-  </:right_side>
-  <:right_side>
-    <section aria-labelledby="section-2-title">
-      <div class="overflow-hidden rounded-lg bg-white shadow">
-        <div class="p-6">
-          <div class="px-4 pb-5">
-            <h3 class="text-lg font-medium leading-6 text-gray-900">Invite people</h3>
+<% end %>
 
-            <div class="mt-5 mb-2 sm:flex sm:items-center">
-              <div class="w-full sm:max-w-xs">
-                <input
-                  id="invite-link"
-                  type="text"
-                  value={Routes.room_show_url(@socket, :show, @id)}
-                  class="block w-full rounded-md bg-gray-300 border-gray-400 shadow-sm sm:text-sm"
-                />
-              </div>
+<%!-- ── Page shell ───────────────────────────────────────────────────── --%>
+<div class="flex min-h-screen flex-col bg-gray-100">
 
+  <%!-- Header --%>
+  <header class="bg-indigo-700 shadow-md">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="flex h-14 items-center justify-between gap-3">
+
+        <%!-- Logo --%>
+        <a href="/" class="flex flex-shrink-0 items-center gap-2">
+          <img
+            class="h-7 w-auto"
+            src={Routes.static_path(@socket, "/images/sorteio-logo-white.svg")}
+            alt="Sorteios"
+          />
+          <span class="hidden text-lg font-bold text-white sm:inline">Sorteios</span>
+        </a>
+
+        <%!-- Participant count pill --%>
+        <div class="flex flex-1 items-center justify-center sm:justify-end sm:flex-none">
+          <div class="flex items-center gap-1.5 rounded-full bg-indigo-600/70 px-3 py-1.5 text-sm font-semibold text-white ring-1 ring-inset ring-white/20">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4 flex-shrink-0">
+              <path d="M7 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM14.5 9a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM1.615 16.428a1.224 1.224 0 0 1-.569-1.175 6.002 6.002 0 0 1 11.908 0c.058.467-.172.92-.57 1.174A9.953 9.953 0 0 1 7 17a9.953 9.953 0 0 1-5.385-1.572ZM14.5 16h-.106c.07-.297.088-.611.048-.933a7.47 7.47 0 0 0-1.588-3.755 4.502 4.502 0 0 1 5.874 2.636.818.818 0 0 1-.36.98A7.465 7.465 0 0 1 14.5 16Z" />
+            </svg>
+            <span>{length(@users)}</span>
+            <span class="hidden text-indigo-200 sm:inline">participants</span>
+          </div>
+        </div>
+
+        <%!-- Logout --%>
+        <.link
+          href={Routes.session_path(@socket, :delete)}
+          method="delete"
+          data-confirm="Are you sure? This cannot be undone"
+          class="flex-shrink-0 rounded-md px-3 py-1.5 text-sm font-medium text-indigo-200 hover:bg-indigo-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-white"
+        >
+          Logout
+        </.link>
+      </div>
+    </div>
+  </header>
+
+  <%!-- Main content --%>
+  <main class="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
+    <%= if @admin? do %>
+      <%!-- ── ADMIN LAYOUT ──────────────────────────────────────────────── --%>
+      <div class="flex flex-col gap-6 lg:flex-row lg:items-start">
+
+        <%!-- Left: prizes (main content) --%>
+        <div class="min-w-0 flex-1">
+          <div class="overflow-hidden rounded-xl bg-white shadow">
+
+            <%!-- Prize list header --%>
+            <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3 sm:px-6">
+              <h2 class="text-base font-semibold text-gray-900">Prizes</h2>
               <button
-                id="copy-to-clipboard"
-                phx-hook="CopyToClipboard"
-                data-input-selector="#invite-link"
-                class="mt-3 inline-flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                phx-click="quick_add_prize"
+                class="inline-flex items-center gap-1 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
-                Copy
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
+                  <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
+                </svg>
+                Add prize
               </button>
             </div>
 
-            <div class="flex place-content-center">
-              <%= link {:safe, @invite_image}, to: Routes.export_path(@socket, :create_qr_code, @id) %>
+            <%!-- Empty state --%>
+            <%= if Enum.empty?(@prizes) do %>
+              <div class="flex flex-col items-center justify-center px-6 py-16 text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="mx-auto mb-4 h-12 w-12 text-gray-300">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                </svg>
+                <p class="text-sm text-gray-500">No prizes yet — add one to get started.</p>
+              </div>
+            <% end %>
+
+            <%!-- Prize rows --%>
+            <ul role="list" class="divide-y divide-gray-100">
+              <%= for prize <- @prizes do %>
+                <li class="flex items-center gap-3 px-4 py-3.5 sm:px-6">
+                  <%!-- Winner avatar or placeholder --%>
+                  <div class="flex-shrink-0">
+                    <%= if prize.winner_name do %>
+                      <img class="h-9 w-9 rounded-full" src={gravatar(prize.winner_email || "")} alt="" />
+                    <% else %>
+                      <div class="flex h-9 w-9 items-center justify-center rounded-full border-2 border-dashed border-gray-300 bg-gray-50">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4 text-gray-300">
+                          <path d="M10 9a3 3 0 100-6 3 3 0 000 6zM6 8a2 2 0 11-4 0 2 2 0 014 0zM1.49 15.326a.78.78 0 01-.358-.442 3 3 0 014.308-3.516 6.484 6.484 0 00-1.905 3.959c-.023.222-.014.442.025.654a4.97 4.97 0 01-2.07-.655zM16.44 15.98a4.97 4.97 0 002.07-.654.78.78 0 00.357-.442 3 3 0 00-4.308-3.517 6.484 6.484 0 011.907 3.96 2.32 2.32 0 01-.026.654zM18 8a2 2 0 11-4 0 2 2 0 014 0zM5.304 16.19a.844.844 0 01-.277-.71 5 5 0 019.947 0 .843.843 0 01-.277.71A6.975 6.975 0 0110 18a6.974 6.974 0 01-4.696-1.81z" />
+                        </svg>
+                      </div>
+                    <% end %>
+                  </div>
+
+                  <%!-- Prize name + winner info --%>
+                  <div class="min-w-0 flex-1">
+                    <%= if prize.winner_name == nil do %>
+                      <%= if @editing_prize_id == prize.id do %>
+                        <input
+                          type="text"
+                          value={prize.name}
+                          phx-mounted={JS.focus()}
+                          phx-blur="save_prize_name"
+                          phx-value-prize-id={prize.id}
+                          phx-key="Escape"
+                          phx-keydown="cancel_edit_prize"
+                          class="w-full rounded border-indigo-300 text-sm font-semibold text-indigo-600 focus:border-indigo-500 focus:ring-indigo-500"
+                        />
+                      <% else %>
+                        <button
+                          phx-click="start_edit_prize"
+                          phx-value-prize-id={prize.id}
+                          class="group flex items-center gap-1 text-left"
+                        >
+                          <span class="truncate text-sm font-semibold text-indigo-600">{prize.name}</span>
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-3.5 w-3.5 flex-shrink-0 text-gray-300 group-hover:text-indigo-400">
+                            <path d="M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z" />
+                          </svg>
+                        </button>
+                      <% end %>
+                    <% else %>
+                      <p class="truncate text-sm font-semibold text-indigo-600">{prize.name}</p>
+                    <% end %>
+
+                    <%= if prize.winner_name do %>
+                      <p class="mt-0.5 flex items-center gap-1 text-xs text-gray-500">
+                        <svg class="h-3.5 w-3.5 flex-shrink-0 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="truncate">{prize.winner_name}</span>
+                      </p>
+                      <%= if prize.winner_email do %>
+                        <p class="mt-0.5 flex items-center gap-1 text-xs text-gray-400">
+                          <svg class="h-3.5 w-3.5 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z" />
+                            <path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z" />
+                          </svg>
+                          <span class="truncate">{prize.winner_email}</span>
+                        </p>
+                      <% end %>
+                    <% else %>
+                      <p class="mt-0.5 text-xs text-gray-400">No winner yet</p>
+                    <% end %>
+                  </div>
+
+                  <%!-- Admin actions --%>
+                  <%= if prize.winner_name == nil do %>
+                    <div class="flex flex-shrink-0 items-center gap-1">
+                      <%= if is_nil(@drawing_prize_id) do %>
+                        <button
+                          phx-click="draw_prize"
+                          phx-value-prize-id={prize.id}
+                          class="inline-flex items-center gap-1 rounded-lg bg-indigo-50 px-2.5 py-1.5 text-xs font-semibold text-indigo-600 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-3.5 w-3.5">
+                            <path d="M10 3.75a2 2 0 10-4 0 2 2 0 004 0zM17.25 4.5a.75.75 0 000-1.5h-5.5a.75.75 0 000 1.5h5.5zM5 3.75a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5a.75.75 0 01.75.75zM4.25 17a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5h1.5zM17.25 17a.75.75 0 000-1.5h-5.5a.75.75 0 000 1.5h5.5zM9 10a.75.75 0 01-.75.75h-5.5a.75.75 0 010-1.5h5.5A.75.75 0 019 10zM17.25 10.75a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5h1.5zM14 10a2 2 0 10-4 0 2 2 0 004 0zM10 16.25a2 2 0 10-4 0 2 2 0 004 0z" />
+                          </svg>
+                          Draw
+                        </button>
+                      <% end %>
+                      <button
+                        phx-click="clone_prize"
+                        phx-value-prize-id={prize.id}
+                        title="Clone prize"
+                        class="rounded-md p-1.5 text-gray-400 hover:bg-yellow-50 hover:text-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" />
+                        </svg>
+                      </button>
+                      <button
+                        phx-click="remove_prize"
+                        phx-value-prize-name={prize.name}
+                        data-confirm="Are you sure? This cannot be undone"
+                        title="Delete prize"
+                        class="rounded-md p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-red-400"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                        </svg>
+                      </button>
+                    </div>
+                  <% end %>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+
+          <%!-- Participants (admin, collapsed by default on mobile, expanded on lg) --%>
+          <div class="mt-6 overflow-hidden rounded-xl bg-white shadow">
+            <button
+              phx-click={JS.toggle(to: "#admin-participants-list")}
+              class="flex w-full items-center justify-between px-4 py-3 text-left sm:px-6"
+            >
+              <span class="text-sm font-semibold text-gray-700">
+                Participants
+                <span class="ml-2 inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+                  {length(@users)}
+                </span>
+              </span>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4 text-gray-400">
+                <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+              </svg>
+            </button>
+            <div id="admin-participants-list" class="hidden border-t border-gray-100 px-4 py-3 sm:px-6">
+              <%= if Enum.empty?(@users) do %>
+                <p class="py-4 text-center text-sm text-gray-400">No participants yet.</p>
+              <% else %>
+                <ul class="divide-y divide-gray-50">
+                  <%= for user <- @users do %>
+                    <li class="flex items-center gap-3 py-2">
+                      <img class="h-7 w-7 flex-shrink-0 rounded-full" src={gravatar(user.email)} alt="" />
+                      <span class="truncate text-sm text-gray-700">{user.name}</span>
+                    </li>
+                  <% end %>
+                </ul>
+              <% end %>
+            </div>
+          </div>
+        </div>
+
+        <%!-- Right: Admin sidebar (QR + invite) --%>
+        <div class="lg:w-80 xl:w-96 flex-shrink-0">
+          <%!-- QR card --%>
+          <div class="overflow-hidden rounded-xl bg-white shadow">
+            <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+              <h3 class="text-sm font-semibold text-gray-900">Invite people</h3>
+              <div class="flex items-center gap-1">
+                <%!-- Hide QR button --%>
+                <button
+                  id="qr-hide-btn"
+                  phx-click={JS.hide(to: "#qr-code-panel") |> JS.hide(to: "#qr-hide-btn") |> JS.show(to: "#qr-show-btn")}
+                  class="rounded px-2 py-1 text-xs text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none"
+                >
+                  Hide QR
+                </button>
+                <%!-- Show QR button (initially hidden) --%>
+                <button
+                  id="qr-show-btn"
+                  phx-click={JS.show(to: "#qr-code-panel") |> JS.show(to: "#qr-hide-btn") |> JS.hide(to: "#qr-show-btn")}
+                  class="hidden rounded px-2 py-1 text-xs text-indigo-600 hover:bg-indigo-50 hover:text-indigo-800 focus:outline-none"
+                >
+                  Show QR
+                </button>
+              </div>
+            </div>
+
+            <%!-- QR code — large and scannable, fills the column --%>
+            <div id="qr-code-panel" class="p-4">
+              <a
+                href={Routes.export_path(@socket, :create_qr_code, @id)}
+                title="Download QR Code"
+                class="block w-full [&>svg]:h-auto [&>svg]:w-full"
+              >
+                {{:safe, @invite_image}}
+              </a>
+            </div>
+
+            <%!-- Room URL input + action buttons --%>
+            <div class="space-y-3 px-4 pb-4">
+              <div class="flex overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+                <input
+                  id="invite-link"
+                  type="text"
+                  readonly
+                  value={Routes.room_show_url(@socket, :show, @id)}
+                  class="min-w-0 flex-1 border-0 bg-transparent px-3 py-2 text-xs text-gray-500 focus:outline-none focus:ring-0"
+                />
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <%!-- Copy URL --%>
+                <button
+                  id="copy-to-clipboard"
+                  phx-hook="CopyToClipboard"
+                  data-input-selector="#invite-link"
+                  class="flex items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
+                    <path fill-rule="evenodd" d="M13.887 3.182c.396.037.79.08 1.183.128C16.194 3.45 17 4.414 17 5.517V16.75A2.25 2.25 0 0 1 14.75 19h-9.5A2.25 2.25 0 0 1 3 16.75V5.517c0-1.103.806-2.068 1.93-2.207.393-.048.787-.09 1.183-.128A3.001 3.001 0 0 1 9 1h2c1.373 0 2.531.923 2.887 2.182ZM7.5 4A1.5 1.5 0 0 1 9 2.5h2A1.5 1.5 0 0 1 12.5 4v.5h-5V4Z" clip-rule="evenodd" />
+                  </svg>
+                  Copy URL
+                </button>
+                <%!-- Download QR --%>
+                <.link
+                  href={Routes.export_path(@socket, :create_qr_code, @id)}
+                  class="flex items-center justify-center gap-1.5 rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
+                    <path d="M10.75 2.75a.75.75 0 0 0-1.5 0v8.614L6.295 8.235a.75.75 0 1 0-1.09 1.03l4.25 4.5a.75.75 0 0 0 1.09 0l4.25-4.5a.75.75 0 0 0-1.09-1.03l-2.955 3.129V2.75Z" />
+                    <path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z" />
+                  </svg>
+                  Download QR
+                </.link>
+              </div>
+            </div>
+          </div>
+
+          <%!-- Participant count card (visible on lg+, count is also in header) --%>
+          <div class="mt-4 hidden rounded-xl bg-white px-5 py-4 shadow lg:flex items-center justify-between">
+            <div>
+              <p class="text-xs font-medium uppercase tracking-wider text-gray-400">In the room</p>
+              <p class="mt-0.5 text-4xl font-bold text-indigo-600">{length(@users)}</p>
+              <p class="text-xs text-gray-400">
+                {if length(@users) == 1, do: "person", else: "people"}
+              </p>
+            </div>
+            <div class="rounded-full bg-indigo-50 p-4">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-8 w-8 text-indigo-500">
+                <path d="M4.5 6.375a4.125 4.125 0 1 1 8.25 0 4.125 4.125 0 0 1-8.25 0ZM14.25 8.625a3.375 3.375 0 1 1 6.75 0 3.375 3.375 0 0 1-6.75 0ZM1.5 19.125a7.125 7.125 0 0 1 14.25 0v.003l-.001.119a.75.75 0 0 1-.363.63 13.067 13.067 0 0 1-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 0 1-.364-.63l-.001-.122ZM17.25 19.128l-.001.144a2.25 2.25 0 0 1-.233.96 10.088 10.088 0 0 0 5.06-1.01.75.75 0 0 0 .42-.643 4.875 4.875 0 0 0-6.957-4.611 8.586 8.586 0 0 1 1.71 5.157v.003Z" />
+              </svg>
             </div>
           </div>
         </div>
       </div>
-    </section>
-  </:right_side>
-  <:right_side>
-    <%= if @admin? do %>
-      <section aria-labelledby="section-2-title">
-        <div class="overflow-hidden rounded-lg bg-white shadow">
-          <div class="p-6">
-            <div class="px-4 pb-5">
-              <h3 class="text-lg font-medium leading-6 text-gray-900">Add prize</h3>
 
-              <.form
-                let={f}
-                for={@changeset}
-                id="prize-form"
-                phx-submit="create_prize"
-                class="mt-5 sm:flex sm:items-center"
-              >
-                <div class="w-full sm:max-w-xs">
-                  <%= text_input(f, :name,
-                    placeholder: "Name",
-                    required: true,
-                    class:
-                      "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  ) %>
-                </div>
+    <% else %>
+      <%!-- ── PARTICIPANT LAYOUT ────────────────────────────────────────── --%>
+      <div class="mx-auto max-w-2xl space-y-5">
 
-                <%= error_tag(f, :name) %>
+        <%!-- Prizes card --%>
+        <div class="overflow-hidden rounded-xl bg-white shadow">
+          <div class="border-b border-gray-100 px-4 py-3 sm:px-6">
+            <h2 class="text-base font-semibold text-gray-900">🎁 Prizes</h2>
+          </div>
 
-                <div class="w-full sm:max-w-xs ml-2">
-                  <%= number_input(f, :quantity,
-                    placeholder: "how many?",
-                    min: 1,
-                    max: 15,
-                    value: @count_prizes,
-                    required: true,
-                    class:
-                      "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  ) %>
-                </div>    
-
-
-                <%= submit("Add",
-                  phx_disable_with: "Adding...",
-                  class:
-                    "mt-3 inline-flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                ) %>
-              </.form>
+          <%= if Enum.empty?(@prizes) do %>
+            <div class="flex flex-col items-center justify-center px-6 py-14 text-center">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="mx-auto mb-3 h-10 w-10 text-gray-300">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+              </svg>
+              <p class="text-sm text-gray-500">Waiting for prizes to be added…</p>
             </div>
+          <% else %>
+            <ul role="list" class="divide-y divide-gray-100">
+              <%= for prize <- @prizes do %>
+                <li class="flex items-center gap-3 px-4 py-3.5 sm:px-6">
+                  <div class="flex-shrink-0">
+                    <%= if prize.winner_name do %>
+                      <img class="h-9 w-9 rounded-full" src={gravatar(prize.winner_email || "")} alt="" />
+                    <% else %>
+                      <div class="flex h-9 w-9 items-center justify-center rounded-full border-2 border-dashed border-gray-300 bg-gray-50">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4 text-gray-300">
+                          <path fill-rule="evenodd" d="M12.577 4.878a.75.75 0 01.919-.53l4.78 1.281a.75.75 0 01.531.919l-1.281 4.78a.75.75 0 01-1.449-.387l.81-3.022a19.407 19.407 0 00-5.594 5.203.75.75 0 01-1.139.093L7 10.06l-4.72 4.72a.75.75 0 01-1.06-1.061l5.25-5.25a.75.75 0 011.06 0l3.074 3.073a20.923 20.923 0 015.545-4.931l-3.042-.815a.75.75 0 01-.53-.918z" clip-rule="evenodd" />
+                        </svg>
+                      </div>
+                    <% end %>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="truncate text-sm font-semibold text-gray-900">{prize.name}</p>
+                    <%= if prize.winner_name do %>
+                      <p class="mt-0.5 flex items-center gap-1 text-xs text-gray-500">
+                        <svg class="h-3.5 w-3.5 flex-shrink-0 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+                        </svg>
+                        Won by {prize.winner_name}
+                      </p>
+                    <% else %>
+                      <p class="mt-0.5 flex items-center gap-1 text-xs text-indigo-500 font-medium">
+                        <span class="inline-block h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
+                        Available
+                      </p>
+                    <% end %>
+                  </div>
+                </li>
+              <% end %>
+            </ul>
+          <% end %>
+        </div>
+
+        <%!-- Participants (collapsible) --%>
+        <div class="overflow-hidden rounded-xl bg-white shadow">
+          <button
+            phx-click={JS.toggle(to: "#participant-list-body")}
+            class="flex w-full items-center justify-between px-4 py-3 text-left sm:px-6"
+          >
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-semibold text-gray-700">Other participants</span>
+              <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+                {length(@users)}
+              </span>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4 text-gray-400">
+              <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+            </svg>
+          </button>
+          <div id="participant-list-body" class="hidden border-t border-gray-100">
+            <ul class="divide-y divide-gray-50 px-4 py-2 sm:px-6">
+              <%= for user <- @users do %>
+                <li class="flex items-center gap-3 py-2.5">
+                  <img class="h-7 w-7 flex-shrink-0 rounded-full" src={gravatar(user.email)} alt="" />
+                  <span class="truncate text-sm text-gray-700">{user.name}</span>
+                  <%= if user.email == @current_user.email do %>
+                    <span class="ml-auto flex-shrink-0 rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-600">You</span>
+                  <% end %>
+                </li>
+              <% end %>
+            </ul>
           </div>
         </div>
-      </section>
-    <% end %>
-  </:right_side>
-  <:right_side>
-    <%= if @admin? do %>
-      <section aria-labelledby="section-2-title">
-        <div class="overflow-hidden rounded-lg bg-white shadow">
-          <div class="p-6">
-            <div class="px-4 pb-5">
-              <h3 class="text-lg font-medium leading-6 text-gray-900">Prize drawing</h3>
 
-              <%= if Enum.any?(@available_prizes) do %>
-                <p class="text-sm font-medium text-gray-900">Eligible users: <%= @eligible_users_count %></p>
-                <p class="text-sm font-medium text-gray-900">Chances: <%= :erlang.float_to_binary(@winning_chance, [decimals: 2]) %>%</p>
-                <button
-                  phx-click="pick_a_random_person"
-                  class="block w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:my-2 sm:w-auto sm:text-sm"
-                >
-                  Draw random person
-                </button>
-                
-                <%= if @loading_winner? do %>
-                  <div class="loader">Loading...</div>
-                <% end %>
-                
-              <% else %>
-                <button
-                  disabled
-                  class="block w-full items-center justify-center rounded-md border border-transparent bg-indigo-300 px-4 py-2 font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:my-2 sm:w-auto sm:text-sm"
-                >
-                  No prizes to draw
-                </button>
-              <% end %>
-
-              <%= if @random_person && !@loading_winner? do %>
-                <.user_block user={@random_person} show_email?={@admin?} />
-                <button
-                  phx-click="give_prize_to_random_person"
-                  data-confirm="Are you sure? This cannot be undone"
-                  class="block w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:my-2 sm:w-auto sm:text-sm"
-                >
-                  Give them the next prize
-                </button>
-              <% end %>
-            </div>
-          </div>
-        </div>
-      </section>
+      </div>
     <% end %>
-  </:right_side>
-</SorteiosWeb.Components.two_columns_layout>
+  </main>
+
+  <SorteiosWeb.Components.common_footer class="text-center" />
+</div>

@@ -125,7 +125,7 @@ defmodule Sorteios.Rooms do
   def list_prizes(room_id) do
     Prize
     |> where(room_id: ^room_id)
-    |> order_by(asc: :winner_name, asc: :inserted_at)
+    |> order_by(asc: :inserted_at)
     |> Repo.all()
   end
 
@@ -225,7 +225,7 @@ defmodule Sorteios.Rooms do
     Repo.all(Participant)
   end
 
-    @doc """
+  @doc """
   Returns the list of participants.
 
   ## Examples
@@ -275,7 +275,6 @@ defmodule Sorteios.Rooms do
       on_conflict: [set: [name: attrs.name]],
       conflict_target: [:email, :room_id]
     )
-
   end
 
   @doc """

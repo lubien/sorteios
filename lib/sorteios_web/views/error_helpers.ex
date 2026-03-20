@@ -3,7 +3,8 @@ defmodule SorteiosWeb.ErrorHelpers do
   Conveniences for translating and building error messages.
   """
 
-  use Phoenix.HTML
+  use PhoenixHTMLHelpers
+  import Phoenix.HTML.Form, only: [input_name: 2]
 
   @doc """
   Generates tag for inlined form input errors.
@@ -12,7 +13,7 @@ defmodule SorteiosWeb.ErrorHelpers do
     Enum.map(Keyword.get_values(form.errors, field), fn error ->
       content_tag(:span, translate_error(error),
         class: "invalid-feedback",
-        phx_feedback_for: input_name(form, field)
+        phx_feedback_group: input_name(form, field)
       )
     end)
   end
