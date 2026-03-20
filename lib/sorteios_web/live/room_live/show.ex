@@ -147,6 +147,24 @@ defmodule SorteiosWeb.RoomLive.Show do
     end
   end
 
+  def handle_event("clone_prize", %{"prize-id" => prize_id}, socket) do
+    prize = Rooms.get_prize!(prize_id)
+    prize_params = %{"name" => prize.name, "room_id" => socket.assigns.id}
+
+    case Rooms.create_prize(prize_params) do
+      {:ok, _prize} ->
+        PubSub.broadcast!(Sorteios.PubSub, topic(socket), "reload_prizes")
+
+        {:noreply,
+         socket
+         |> reload_prizes()
+         |> put_flash(:info, "Prize cloned successfully")}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, changeset: changeset)}
+    end
+  end
+
   def handle_event("remove_prize", %{"prize-name" => prize_name}, socket) do
     prize =
       socket.assigns.available_prizes
