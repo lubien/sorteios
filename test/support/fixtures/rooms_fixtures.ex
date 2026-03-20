@@ -38,4 +38,19 @@ defmodule Sorteios.RoomsFixtures do
 
     participant
   end
+
+  @doc """
+  Generate a prize for a given room.
+  """
+  def prize_fixture(room, attrs \\ %{}) do
+    {:ok, prize} =
+      attrs
+      |> Enum.into(%{
+        name: "Test Prize",
+        room_id: room.id
+      })
+      |> Sorteios.Rooms.create_prize()
+
+    prize
+  end
 end
