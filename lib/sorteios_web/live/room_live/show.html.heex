@@ -2,10 +2,7 @@
   <div class="overflow-hidden bg-white shadow sm:rounded-md">
     <ul role="list" class="divide-y divide-gray-200">
       <%= if Enum.empty?(@prizes) do %>
-        <button
-          type="button"
-          class="relative block w-full rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-        >
+        <div class="relative block w-full rounded-lg border-2 border-dashed border-gray-300 p-12 text-center">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -21,10 +18,30 @@
             />
           </svg>
 
-          <span class="mt-2 block text-sm font-medium text-gray-900">
-            Wait for the admin to create a prize
-          </span>
-        </button>
+          <%= if @admin? do %>
+            <button
+              phx-click="quick_add_prize"
+              class="mt-4 inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-sm"
+            >
+              Add prize
+            </button>
+          <% else %>
+            <span class="mt-2 block text-sm font-medium text-gray-900">
+              Wait for the admin to create a prize
+            </span>
+          <% end %>
+        </div>
+      <% end %>
+
+      <%= if not Enum.empty?(@prizes) && @admin? do %>
+        <div class="flex justify-end px-4 py-3">
+          <button
+            phx-click="quick_add_prize"
+            class="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-sm"
+          >
+            + Add prize
+          </button>
+        </div>
       <% end %>
 
       <%= for prize <- @prizes do %>
@@ -174,56 +191,7 @@
       </div>
     </section>
   </:right_side>
-  <:right_side>
-    <%= if @admin? do %>
-      <section aria-labelledby="section-2-title">
-        <div class="overflow-hidden rounded-lg bg-white shadow">
-          <div class="p-6">
-            <div class="px-4 pb-5">
-              <h3 class="text-lg font-medium leading-6 text-gray-900">Add prize</h3>
 
-              <.form
-                :let={f}
-                for={@changeset}
-                id="prize-form"
-                phx-submit="create_prize"
-                class="mt-5 sm:flex sm:items-center"
-              >
-                <div class="w-full sm:max-w-xs">
-                  {text_input(f, :name,
-                    placeholder: "Name",
-                    required: true,
-                    class:
-                      "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  )}
-                </div>
-
-                {error_tag(f, :name)}
-
-                <div class="w-full sm:max-w-xs ml-2">
-                  {number_input(f, :quantity,
-                    placeholder: "how many?",
-                    min: 1,
-                    max: 15,
-                    value: @count_prizes,
-                    required: true,
-                    class:
-                      "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  )}
-                </div>
-
-                {submit("Add",
-                  phx_disable_with: "Adding...",
-                  class:
-                    "mt-3 inline-flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                )}
-              </.form>
-            </div>
-          </div>
-        </div>
-      </section>
-    <% end %>
-  </:right_side>
   <:right_side>
     <%= if @admin? do %>
       <section aria-labelledby="section-2-title">

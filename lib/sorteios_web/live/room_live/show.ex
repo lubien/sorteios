@@ -39,8 +39,7 @@ defmodule SorteiosWeb.RoomLive.Show do
           users: [],
           prizes: [],
           invite_image: invite_image,
-          random_person: nil,
-          count_prizes: 1
+          random_person: nil
         )
 
       {:ok,
@@ -61,6 +60,26 @@ defmodule SorteiosWeb.RoomLive.Show do
      socket
      |> put_flash(:info, "You need to specify your name and email to enter")
      |> redirect(to: Routes.session_path(socket, :new, room_id: id))}
+  end
+
+  @impl true
+  def handle_event("quick_add_prize", _params, socket) do
+    count = length(socket.assigns.prizes) + 1
+    name = "#{ordinal(count)} Prize"
+    prize_params = %{"name" => name, "room_id" => socket.assigns.id}
+
+    case Rooms.create_prize(prize_params) do
+      {:ok, _prize} ->
+        PubSub.broadcast!(Sorteios.PubSub, topic(socket), "reload_prizes")
+
+        {:noreply,
+         socket
+         |> reload_prizes()
+         |> put_flash(:info, "Prize created successfully")}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, changeset: changeset)}
+    end
   end
 
   @impl true
@@ -228,6 +247,20 @@ defmodule SorteiosWeb.RoomLive.Show do
 
     socket
     |> assign(:available_prizes, Enum.filter(prizes, &(&1.winner_name == nil)))
+  end
+
+  defp ordinal(1), do: "1st"
+  defp ordinal(2), do: "2nd"
+  defp ordinal(3), do: "3rd"
+  defp ordinal(n) when n in 4..20, do: "#{n}th"
+
+  defp ordinal(n) do
+    case rem(n, 10) do
+      1 -> "#{n}st"
+      2 -> "#{n}nd"
+      3 -> "#{n}rd"
+      _ -> "#{n}th"
+    end
   end
 
   def gravatar(email) do
