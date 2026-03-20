@@ -26,7 +26,7 @@ defmodule SorteiosWeb.RoomLive.Show do
       invite_image =
         Routes.room_show_url(socket, :show, id)
         |> EQRCode.encode()
-        |> EQRCode.svg(width: 240)
+        |> EQRCode.svg(width: 400)
 
       socket =
         assign(
