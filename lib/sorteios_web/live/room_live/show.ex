@@ -127,6 +127,17 @@ defmodule SorteiosWeb.RoomLive.Show do
     {:noreply, socket}
   end
 
+  def handle_event("give_prize_to_random_person", _params, socket) do
+    available_prizes = socket.assigns.available_prizes
+
+    if Enum.any?(available_prizes) do
+      {:noreply, award_prize(socket, List.first(available_prizes))}
+    else
+      {:noreply, put_flash(socket, :error, "Sem premios para sortear")}
+    end
+  end
+
+  @impl true
   def handle_info(:run_search, socket) do
     random_person =
       socket.assigns.users
@@ -143,17 +154,6 @@ defmodule SorteiosWeb.RoomLive.Show do
     {:noreply, socket}
   end
 
-  def handle_event("give_prize_to_random_person", _params, socket) do
-    available_prizes = socket.assigns.available_prizes
-
-    if Enum.any?(available_prizes) do
-      {:noreply, award_prize(socket, List.first(available_prizes))}
-    else
-      {:noreply, put_flash(socket, :error, "Sem premios para sortear")}
-    end
-  end
-
-  @impl true
   def handle_info(%{event: "presence_diff"}, socket) do
     {:noreply, reload_users(socket)}
   end
