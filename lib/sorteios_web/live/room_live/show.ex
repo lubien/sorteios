@@ -42,14 +42,16 @@ defmodule SorteiosWeb.RoomLive.Show do
           invite_image: invite_image,
           random_person: nil,
           editing_prize_id: nil,
-          drawing_prize_id: nil
+          drawing_prize_id: nil,
+          reservation_token: nil
         )
 
       {:ok,
        socket
        |> assign(:changeset, Rooms.change_prize(%Prize{}))
        |> reload_users()
-       |> reload_prizes()}
+       |> reload_prizes()
+       |> restore_active_reservation()}
     else
       {:ok,
        socket
@@ -186,93 +188,178 @@ defmodule SorteiosWeb.RoomLive.Show do
   end
 
   def handle_event("draw_prize", %{"prize-id" => prize_id}, socket) do
-    Process.send_after(self(), {:run_search, prize_id}, 3000)
+    Rooms.clear_prize_winner_reservation(
+      socket.assigns.drawing_prize_id,
+      socket.assigns.reservation_token
+    )
+
+    reservation_token = Ecto.UUID.generate()
+    Process.send_after(self(), {:run_search, prize_id, reservation_token}, 3000)
 
     PubSub.broadcast_from!(Sorteios.PubSub, self(), topic(socket), %{
       event: "draw_started",
-      prize_id: prize_id
+      prize_id: prize_id,
+      reservation_token: reservation_token
     })
 
     {:noreply,
      assign(socket,
        drawing_prize_id: prize_id,
+       reservation_token: reservation_token,
        loading_winner?: true,
        random_person: nil
      )}
   end
 
   def handle_event("confirm_prize_winner", %{"prize-id" => prize_id}, socket) do
-    prize = Enum.find(socket.assigns.available_prizes, &(&1.id == prize_id))
-
-    if prize && socket.assigns.random_person do
-      {:noreply, award_prize(socket, prize)}
+    if active_draw?(socket, prize_id, socket.assigns.reservation_token) &&
+         socket.assigns.random_person do
+      {:noreply, award_prize(socket, prize_id, socket.assigns.reservation_token)}
     else
       {:noreply, put_flash(socket, :error, "No prize or winner found")}
     end
   end
 
   def handle_event("cancel_draw", _params, socket) do
-    PubSub.broadcast_from!(Sorteios.PubSub, self(), topic(socket), %{event: "draw_cancelled"})
-    {:noreply, assign(socket, drawing_prize_id: nil, loading_winner?: false, random_person: nil)}
+    Rooms.clear_prize_winner_reservation(
+      socket.assigns.drawing_prize_id,
+      socket.assigns.reservation_token
+    )
+
+    PubSub.broadcast_from!(Sorteios.PubSub, self(), topic(socket), %{
+      event: "draw_cancelled",
+      prize_id: socket.assigns.drawing_prize_id,
+      reservation_token: socket.assigns.reservation_token
+    })
+
+    {:noreply, clear_active_draw(socket)}
   end
 
   @impl true
-  def handle_info({:run_search, prize_id}, socket) do
-    if socket.assigns.drawing_prize_id == prize_id do
-      eligible =
-        socket.assigns.users
-        |> Enum.reject(&(&1.email == socket.assigns.current_user.email))
+  def handle_info({:run_search, prize_id, reservation_token}, socket) do
+    if active_draw?(socket, prize_id, reservation_token) do
+      case Rooms.reserve_prize_winner(
+             prize_id,
+             socket.assigns.id,
+             socket.assigns.current_user.email,
+             reservation_token
+           ) do
+        {:error, reason} ->
+          PubSub.broadcast_from!(Sorteios.PubSub, self(), topic(socket), %{
+            event: "draw_cancelled",
+            prize_id: prize_id,
+            reservation_token: reservation_token
+          })
 
-      if Enum.empty?(eligible) do
-        PubSub.broadcast_from!(Sorteios.PubSub, self(), topic(socket), %{event: "draw_cancelled"})
-        {:noreply, assign(socket, loading_winner?: false, drawing_prize_id: nil)}
-      else
-        random_person = Enum.random(eligible)
+          {:noreply,
+           socket
+           |> clear_active_draw()
+           |> reload_prizes()
+           |> put_flash(:error, draw_error_message(reason))}
 
-        PubSub.broadcast_from!(Sorteios.PubSub, self(), topic(socket), %{
-          event: "draw_result",
-          prize_id: prize_id,
-          person: random_person
-        })
+        {:ok, random_person} ->
+          PubSub.broadcast_from!(Sorteios.PubSub, self(), topic(socket), %{
+            event: "draw_result",
+            prize_id: prize_id,
+            person: random_person,
+            reservation_token: reservation_token
+          })
 
-        {:noreply, assign(socket, random_person: random_person, loading_winner?: false)}
+          {:noreply, assign(socket, random_person: random_person, loading_winner?: false)}
       end
     else
       {:noreply, socket}
     end
   end
 
-  def handle_info(%{event: "draw_started", prize_id: prize_id}, socket) do
+  def handle_info({:run_search, prize_id}, socket) do
+    handle_info({:run_search, prize_id, socket.assigns.reservation_token}, socket)
+  end
+
+  def handle_info(
+        %{event: "draw_started", prize_id: prize_id, reservation_token: reservation_token},
+        socket
+      ) do
     {:noreply,
      assign(socket,
        drawing_prize_id: prize_id,
+       reservation_token: reservation_token,
        loading_winner?: true,
        random_person: nil
      )}
+  end
+
+  def handle_info(
+        %{
+          event: "draw_result",
+          prize_id: prize_id,
+          person: person,
+          reservation_token: reservation_token
+        },
+        socket
+      ) do
+    if active_draw?(socket, prize_id, reservation_token) do
+      {:noreply, assign(socket, random_person: person, loading_winner?: false)}
+    else
+      {:noreply, socket}
+    end
   end
 
   def handle_info(%{event: "draw_result", person: person}, socket) do
     {:noreply, assign(socket, random_person: person, loading_winner?: false)}
   end
 
+  def handle_info(%{event: "draw_started", prize_id: _prize_id}, socket) do
+    {:noreply, socket |> clear_active_draw() |> reload_prizes()}
+  end
+
+  def handle_info(
+        %{event: "draw_cancelled", prize_id: prize_id, reservation_token: reservation_token},
+        socket
+      ) do
+    if active_draw?(socket, prize_id, reservation_token) do
+      {:noreply, clear_active_draw(socket)}
+    else
+      {:noreply, socket}
+    end
+  end
+
   def handle_info(%{event: "draw_cancelled"}, socket) do
-    {:noreply, assign(socket, drawing_prize_id: nil, loading_winner?: false, random_person: nil)}
+    {:noreply, clear_active_draw(socket)}
   end
 
   def handle_info(%{event: "presence_diff"}, socket) do
     {:noreply, reload_users(socket)}
   end
 
-  def handle_info(%{event: "winner", winner: winner, prize: prize}, socket) do
-    socket =
-      socket
-      |> reload_prizes()
-      |> assign(:drawing_prize_id, nil)
-      |> assign(:random_person, nil)
-      |> assign(:loading_winner?, false)
-      |> put_flash(:success, "#{winner.name} ganhou #{prize.name}")
+  def handle_info(
+        %{event: "winner", winner: winner, prize: prize, reservation_token: reservation_token},
+        socket
+      ) do
+    socket = reload_prizes(socket)
 
-    {:noreply, socket}
+    if active_draw?(socket, prize.id, reservation_token) do
+      {:noreply,
+       socket
+       |> clear_active_draw()
+       |> put_flash(
+         :success,
+         "#{winner.name} ganhou #{prize.name}"
+       )}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  def handle_info(%{event: "winner", winner: winner, prize: prize}, socket) do
+    {:noreply,
+     socket
+     |> reload_prizes()
+     |> clear_active_draw()
+     |> put_flash(
+       :success,
+       "#{winner.name} ganhou #{prize.name}"
+     )}
   end
 
   def handle_info("reload_prizes", socket) do
@@ -282,26 +369,35 @@ defmodule SorteiosWeb.RoomLive.Show do
   defp topic(%{assigns: %{room: room}}), do: topic(room)
   defp topic(%Room{id: id}), do: "room:#{id}"
 
-  def award_prize(socket, prize) do
-    winner = socket.assigns.random_person
-
-    attrs = %{
-      winner_name: winner.name,
-      winner_email: winner.email
-    }
-
-    case Rooms.update_prize(prize, attrs) do
+  def award_prize(socket, prize_id, reservation_token) do
+    case Rooms.confirm_prize_winner(prize_id, reservation_token) do
       {:ok, prize} ->
+        winner = %{name: prize.winner_name, email: prize.winner_email}
+
         PubSub.broadcast!(Sorteios.PubSub, topic(socket), %{
           event: "winner",
           winner: winner,
-          prize: prize
+          prize: prize,
+          reservation_token: reservation_token
         })
 
         socket
         |> assign(:random_person, nil)
         |> assign(:drawing_prize_id, nil)
+        |> assign(:reservation_token, nil)
         |> reload_prizes()
+
+      {:error, reason} ->
+        PubSub.broadcast_from!(Sorteios.PubSub, self(), topic(socket), %{
+          event: "draw_cancelled",
+          prize_id: prize_id,
+          reservation_token: reservation_token
+        })
+
+        socket
+        |> clear_active_draw()
+        |> reload_prizes()
+        |> put_flash(:error, draw_error_message(reason))
     end
   end
 
@@ -310,6 +406,49 @@ defmodule SorteiosWeb.RoomLive.Show do
     |> assign(:prizes, Rooms.list_prizes(socket.assigns.id))
     |> filter_available_prizes()
   end
+
+  defp active_draw?(socket, prize_id, reservation_token) do
+    socket.assigns.drawing_prize_id == prize_id &&
+      socket.assigns.reservation_token == reservation_token &&
+      not is_nil(reservation_token)
+  end
+
+  defp restore_active_reservation(%{assigns: %{admin?: true}} = socket) do
+    case Rooms.get_active_reservation(socket.assigns.id) do
+      nil ->
+        socket
+
+      prize ->
+        assign(socket,
+          drawing_prize_id: prize.id,
+          reservation_token: prize.reservation_token,
+          loading_winner?: false,
+          random_person: %{name: prize.reserved_winner_name, email: prize.reserved_winner_email}
+        )
+    end
+  end
+
+  defp restore_active_reservation(socket), do: socket
+
+  defp clear_active_draw(socket) do
+    assign(socket,
+      drawing_prize_id: nil,
+      reservation_token: nil,
+      loading_winner?: false,
+      random_person: nil
+    )
+  end
+
+  defp draw_error_message(:prize_unavailable),
+    do: "This prize is currently reserved; try again later"
+
+  defp draw_error_message(:draw_in_progress),
+    do: "Another draw is waiting to be assigned or cancelled"
+
+  defp draw_error_message(:reservation_expired),
+    do: "The draw expired; please draw again"
+
+  defp draw_error_message(_reason), do: "No prize or winner found"
 
   def compute_chance(users_length) do
     if users_length > 0 do

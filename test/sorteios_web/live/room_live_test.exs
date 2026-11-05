@@ -70,10 +70,10 @@ defmodule SorteiosWeb.RoomLiveTest do
       %{room: room_fixture()}
     end
 
-    test "non-admin sees the waiting message", %{conn: conn, room: room} do
+    test "non-admin sees the empty-state waiting message", %{conn: conn, room: room} do
       conn = conn_as_user(conn)
       {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
-      assert render(lv) =~ "Wait for the admin to create a prize"
+      assert render(lv) =~ "Waiting for prizes to be added…"
     end
 
     test "non-admin does not see an Add prize button", %{conn: conn, room: room} do
@@ -91,7 +91,7 @@ defmodule SorteiosWeb.RoomLiveTest do
     test "admin does not see the waiting message", %{conn: conn, room: room} do
       conn = conn_as_admin(conn, room)
       {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
-      refute render(lv) =~ "Wait for the admin to create a prize"
+      refute render(lv) =~ "Waiting for prizes to be added…"
     end
   end
 
@@ -165,10 +165,10 @@ defmodule SorteiosWeb.RoomLiveTest do
 
       lv |> element("button[phx-click='quick_add_prize']") |> render_click()
 
-      refute render(lv) =~ "Wait for the admin to create a prize"
+      refute render(lv) =~ "Waiting for prizes to be added…"
     end
 
-    test "the '+ Add prize' list-header button appears once prizes exist", %{
+    test "the 'Add prize' list-header button appears once prizes exist", %{
       conn: conn,
       room: room
     } do
@@ -177,7 +177,7 @@ defmodule SorteiosWeb.RoomLiveTest do
 
       lv |> element("button[phx-click='quick_add_prize']") |> render_click()
 
-      assert render(lv) =~ "+ Add prize"
+      assert render(lv) =~ "Add prize"
     end
   end
 
@@ -198,10 +198,10 @@ defmodule SorteiosWeb.RoomLiveTest do
       assert render(lv) =~ prize.name
     end
 
-    test "unclaimed prize shows 'No winner yet'", %{conn: conn, room: room} do
+    test "unclaimed prize is available to participants", %{conn: conn, room: room} do
       conn = conn_as_user(conn)
       {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
-      assert render(lv) =~ "No winner yet"
+      assert render(lv) =~ "Available"
     end
 
     test "claimed prize shows the winner's name", %{conn: conn, room: room} do
@@ -447,6 +447,34 @@ defmodule SorteiosWeb.RoomLiveTest do
       assert html =~ "Other Person" or html =~ "Admin User"
     end
 
+    test "a previous prize winner is not drawn again", %{conn: conn, room: room, prize: prize} do
+      {:ok, _} =
+        Rooms.create_participant(%{
+          name: "Previous Winner",
+          email: "previous-winner@example.com",
+          room_id: room.id
+        })
+
+      _claimed =
+        prize_fixture(room, %{
+          name: "Claimed Prize",
+          winner_name: "Previous Winner",
+          winner_email: "previous-winner@example.com"
+        })
+
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      lv
+      |> element("button[phx-click='draw_prize'][phx-value-prize-id='#{prize.id}']")
+      |> render_click()
+
+      send(lv.pid, {:run_search, prize.id})
+
+      winner_html = lv |> element("div.winner-enter h3") |> render()
+      refute winner_html =~ "Previous Winner"
+    end
+
     test "after the delay Assign and Re-draw buttons appear", %{
       conn: conn,
       room: room,
@@ -467,6 +495,31 @@ defmodule SorteiosWeb.RoomLiveTest do
              )
 
       assert has_element?(lv, "button[phx-click='draw_prize'][phx-value-prize-id='#{prize.id}']")
+    end
+
+    test "re-drawing replaces the previous reservation", %{
+      conn: conn,
+      room: room,
+      prize: prize
+    } do
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      lv
+      |> element("button[phx-click='draw_prize'][phx-value-prize-id='#{prize.id}']")
+      |> render_click()
+
+      send(lv.pid, {:run_search, prize.id})
+      assert has_element?(lv, "button[phx-click='draw_prize'][phx-value-prize-id='#{prize.id}']")
+
+      lv
+      |> element("button[phx-click='draw_prize'][phx-value-prize-id='#{prize.id}']")
+      |> render_click()
+
+      send(lv.pid, {:run_search, prize.id})
+
+      assert has_element?(lv, "div.winner-enter h3")
+      refute render(lv) =~ "Waiting for the admin to assign the prize"
     end
 
     test "stale :run_search message for a cancelled draw is ignored", %{
@@ -631,7 +684,7 @@ defmodule SorteiosWeb.RoomLiveTest do
       %{room: room, prize: prize}
     end
 
-    test "non-admin sees the overlay when draw_started is broadcast", %{
+    test "ignores legacy draw_started events without a reservation token", %{
       conn: conn,
       room: room,
       prize: prize
@@ -641,7 +694,7 @@ defmodule SorteiosWeb.RoomLiveTest do
 
       send(lv.pid, %{event: "draw_started", prize_id: prize.id})
 
-      assert render(lv) =~ "Drawing"
+      refute render(lv) =~ "Drawing"
     end
 
     test "non-admin overlay shows the prize name when draw_started is broadcast", %{
@@ -652,7 +705,11 @@ defmodule SorteiosWeb.RoomLiveTest do
       conn = conn_as_user(conn)
       {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
 
-      send(lv.pid, %{event: "draw_started", prize_id: prize.id})
+      send(lv.pid, %{
+        event: "draw_started",
+        prize_id: prize.id,
+        reservation_token: "test-token"
+      })
 
       assert render(lv) =~ prize.name
     end
@@ -665,12 +722,17 @@ defmodule SorteiosWeb.RoomLiveTest do
       conn = conn_as_user(conn)
       {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
 
-      send(lv.pid, %{event: "draw_started", prize_id: prize.id})
+      send(lv.pid, %{
+        event: "draw_started",
+        prize_id: prize.id,
+        reservation_token: "test-token"
+      })
 
       send(lv.pid, %{
         event: "draw_result",
         prize_id: prize.id,
-        person: %{name: "Jane Doe", email: "jane@example.com"}
+        person: %{name: "Jane Doe", email: "jane@example.com"},
+        reservation_token: "test-token"
       })
 
       assert render(lv) =~ "Jane Doe"
@@ -684,12 +746,17 @@ defmodule SorteiosWeb.RoomLiveTest do
       conn = conn_as_user(conn)
       {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
 
-      send(lv.pid, %{event: "draw_started", prize_id: prize.id})
+      send(lv.pid, %{
+        event: "draw_started",
+        prize_id: prize.id,
+        reservation_token: "test-token"
+      })
 
       send(lv.pid, %{
         event: "draw_result",
         prize_id: prize.id,
-        person: %{name: "Jane Doe", email: "jane@example.com"}
+        person: %{name: "Jane Doe", email: "jane@example.com"},
+        reservation_token: "test-token"
       })
 
       refute has_element?(lv, "button[phx-click='confirm_prize_winner']")
@@ -704,12 +771,17 @@ defmodule SorteiosWeb.RoomLiveTest do
       conn = conn_as_user(conn)
       {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
 
-      send(lv.pid, %{event: "draw_started", prize_id: prize.id})
+      send(lv.pid, %{
+        event: "draw_started",
+        prize_id: prize.id,
+        reservation_token: "test-token"
+      })
 
       send(lv.pid, %{
         event: "draw_result",
         prize_id: prize.id,
-        person: %{name: "Jane Doe", email: "jane@example.com"}
+        person: %{name: "Jane Doe", email: "jane@example.com"},
+        reservation_token: "test-token"
       })
 
       assert render(lv) =~ "Waiting for the admin"
@@ -995,6 +1067,74 @@ defmodule SorteiosWeb.RoomLiveTest do
                lv,
                "button[phx-click='start_edit_prize'][phx-value-prize-id='#{other.id}']"
              )
+    end
+  end
+
+  describe "Show - restoring a reservation on mount" do
+    setup do
+      room = room_fixture()
+      prize = prize_fixture(room)
+
+      {:ok, _} =
+        Rooms.create_participant(%{
+          name: "Other Person",
+          email: "other@example.com",
+          room_id: room.id
+        })
+
+      token = Ecto.UUID.generate()
+
+      {:ok, _participant} =
+        Rooms.reserve_prize_winner(prize.id, room.id, "admin@example.com", token)
+
+      %{room: room, prize: prize}
+    end
+
+    test "admin sees the confirmation UI for an active reservation", %{
+      conn: conn,
+      room: room,
+      prize: prize
+    } do
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      assert lv |> element("div.winner-enter h3") |> render() =~ "Other Person"
+
+      assert has_element?(
+               lv,
+               "button[phx-click='confirm_prize_winner'][phx-value-prize-id='#{prize.id}']"
+             )
+    end
+
+    test "admin can confirm a restored reservation", %{conn: conn, room: room, prize: prize} do
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      lv
+      |> element("button[phx-click='confirm_prize_winner'][phx-value-prize-id='#{prize.id}']")
+      |> render_click()
+
+      prize = Rooms.get_prize!(prize.id)
+      assert prize.winner_email == "other@example.com"
+      assert is_nil(prize.reservation_token)
+    end
+
+    test "non-admin does not get the reservation restored", %{conn: conn, room: room} do
+      conn = conn_as_user(conn)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      refute has_element?(lv, "div.winner-enter")
+    end
+
+    test "an expired reservation is not restored", %{conn: conn, room: room, prize: prize} do
+      expired_at = DateTime.add(DateTime.utc_now(), -301, :second)
+      {:ok, _} = Rooms.update_prize(Rooms.get_prize!(prize.id), %{reserved_at: expired_at})
+
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      refute has_element?(lv, "div.winner-enter")
+      assert has_element?(lv, "button[phx-click='draw_prize'][phx-value-prize-id='#{prize.id}']")
     end
   end
 end

@@ -7,6 +7,7 @@ defmodule Sorteios.Rooms do
   alias Sorteios.Repo
 
   alias Sorteios.Rooms.Room
+  alias Sorteios.Rooms.Participant
 
   @doc """
   Returns the list of rooms.
@@ -181,6 +182,158 @@ defmodule Sorteios.Rooms do
     |> Repo.update()
   end
 
+  @reservation_ttl_seconds 300
+
+  def reserve_prize_winner(prize_id, room_id, excluded_email, reservation_token) do
+    Repo.transaction(fn ->
+      if is_nil(Repo.one(from room in Room, where: room.id == ^room_id, lock: "FOR UPDATE")) do
+        Repo.rollback(:room_not_found)
+      end
+
+      prize =
+        Repo.one(
+          from prize in Prize,
+            where: prize.id == ^prize_id and prize.room_id == ^room_id,
+            lock: "FOR UPDATE"
+        )
+
+      if is_nil(prize), do: Repo.rollback(:prize_not_found)
+
+      cutoff = DateTime.add(DateTime.utc_now(), -@reservation_ttl_seconds, :second)
+
+      prize =
+        if prize.reserved_at && DateTime.compare(prize.reserved_at, cutoff) == :lt do
+          prize
+          |> Prize.changeset(%{
+            reserved_winner_name: nil,
+            reserved_winner_email: nil,
+            reserved_at: nil,
+            reservation_token: nil
+          })
+          |> Repo.update!()
+        else
+          prize
+        end
+
+      if prize.winner_email || prize.reserved_winner_email do
+        Repo.rollback(:prize_unavailable)
+      end
+
+      # Only one draw per room may await confirmation at a time. The room lock
+      # above serializes reservations, so this check cannot race.
+      draw_in_progress? =
+        Repo.exists?(
+          from other in Prize,
+            where:
+              other.room_id == ^room_id and other.id != ^prize.id and
+                not is_nil(other.reserved_winner_email) and other.reserved_at > ^cutoff
+        )
+
+      if draw_in_progress?, do: Repo.rollback(:draw_in_progress)
+
+      claimed_emails =
+        from claimed in Prize,
+          where: claimed.room_id == ^room_id and not is_nil(claimed.winner_email),
+          select: claimed.winner_email
+
+      candidates =
+        Participant
+        |> where(
+          [participant],
+          participant.room_id == ^room_id and
+            participant.email != ^excluded_email and
+            participant.email not in subquery(claimed_emails)
+        )
+        |> Repo.all()
+
+      if candidates == [], do: Repo.rollback(:no_eligible_participant)
+
+      participant = Enum.random(candidates)
+
+      prize
+      |> Prize.changeset(%{
+        reserved_winner_name: participant.name,
+        reserved_winner_email: participant.email,
+        reserved_at: DateTime.utc_now(),
+        reservation_token: reservation_token
+      })
+      |> Repo.update!()
+
+      participant
+    end)
+  end
+
+  def confirm_prize_winner(prize_id, reservation_token) do
+    Repo.transaction(fn ->
+      prize =
+        Repo.one(from prize in Prize, where: prize.id == ^prize_id, lock: "FOR UPDATE")
+
+      if is_nil(prize), do: Repo.rollback(:prize_not_found)
+
+      cutoff = DateTime.add(DateTime.utc_now(), -@reservation_ttl_seconds, :second)
+
+      if prize.reservation_token != reservation_token do
+        Repo.rollback(:winner_not_reserved)
+      end
+
+      if is_nil(prize.reserved_winner_email) || is_nil(prize.reserved_at) do
+        Repo.rollback(:winner_not_reserved)
+      end
+
+      if DateTime.compare(prize.reserved_at, cutoff) != :gt do
+        Repo.rollback(:reservation_expired)
+      end
+
+      changeset =
+        Prize.changeset(prize, %{
+          winner_name: prize.reserved_winner_name,
+          winner_email: prize.reserved_winner_email,
+          reserved_winner_name: nil,
+          reserved_winner_email: nil,
+          reserved_at: nil,
+          reservation_token: nil
+        })
+
+      case Repo.update(changeset) do
+        {:ok, prize} -> prize
+        {:error, _changeset} -> Repo.rollback(:winner_conflict)
+      end
+    end)
+  end
+
+  def get_active_reservation(room_id) do
+    cutoff = DateTime.add(DateTime.utc_now(), -@reservation_ttl_seconds, :second)
+
+    Prize
+    |> where(
+      [prize],
+      prize.room_id == ^room_id and is_nil(prize.winner_email) and
+        not is_nil(prize.reserved_winner_email) and not is_nil(prize.reservation_token) and
+        prize.reserved_at > ^cutoff
+    )
+    |> order_by(desc: :reserved_at)
+    |> limit(1)
+    |> Repo.one()
+  end
+
+  def clear_prize_winner_reservation(nil, _reservation_token), do: :ok
+
+  def clear_prize_winner_reservation(prize_id, reservation_token) do
+    Prize
+    |> where(
+      [prize],
+      prize.id == ^prize_id and prize.reservation_token == ^reservation_token
+    )
+    |> Repo.update_all(
+      set: [
+        reserved_winner_name: nil,
+        reserved_winner_email: nil,
+        reserved_at: nil,
+        reservation_token: nil
+      ]
+    )
+  end
+
   @doc """
   Deletes a prize.
 
@@ -209,8 +362,6 @@ defmodule Sorteios.Rooms do
   def change_prize(%Prize{} = prize, attrs \\ %{}) do
     Prize.changeset(prize, attrs)
   end
-
-  alias Sorteios.Rooms.Participant
 
   @doc """
   Returns the list of participants.

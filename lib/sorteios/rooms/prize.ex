@@ -8,6 +8,10 @@ defmodule Sorteios.Rooms.Prize do
     field :name, :string
     field :winner_email, :string
     field :winner_name, :string
+    field :reserved_winner_email, :string
+    field :reserved_winner_name, :string
+    field :reserved_at, :utc_datetime_usec
+    field :reservation_token, :string
     field :room_id, :binary_id
 
     timestamps()
@@ -16,7 +20,17 @@ defmodule Sorteios.Rooms.Prize do
   @doc false
   def changeset(prize, attrs) do
     prize
-    |> cast(attrs, [:name, :winner_name, :winner_email, :room_id])
+    |> cast(attrs, [
+      :name,
+      :winner_name,
+      :winner_email,
+      :reserved_winner_name,
+      :reserved_winner_email,
+      :reserved_at,
+      :reservation_token,
+      :room_id
+    ])
     |> validate_required([:name])
+    |> unique_constraint(:winner_email, name: :prizes_room_id_winner_email_unique)
   end
 end
