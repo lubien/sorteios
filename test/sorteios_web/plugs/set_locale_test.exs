@@ -35,12 +35,23 @@ defmodule SorteiosWeb.Plugs.SetLocaleTest do
     assert conn.assigns.locale == "pt_BR"
   end
 
+  test "prefers session locale over browser locale" do
+    conn =
+      :get
+      |> Plug.Test.conn("/")
+      |> Plug.Test.init_test_session(%{"locale" => "pt_BR"})
+      |> put_req_header("accept-language", "en")
+      |> SetLocale.call([])
+
+    assert conn.assigns.locale == "pt_BR"
+  end
+
   test "uses the highest quality supported browser locale" do
     conn =
       :get
       |> Plug.Test.conn("/")
       |> Plug.Test.init_test_session(%{})
-      |> put_req_header("accept-language", "pt-BR;q=1.0,en;q=0.8")
+      |> put_req_header("accept-language", "en;q=0.8,pt-BR;q=1.0")
       |> SetLocale.call([])
 
     assert conn.assigns.locale == "pt_BR"

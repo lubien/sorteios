@@ -1106,6 +1106,32 @@ defmodule SorteiosWeb.RoomLiveTest do
              )
     end
 
+    test "translates the error when another draw reserves a prize", %{
+      conn: conn,
+      room: room,
+      prize: prize
+    } do
+      other_prize = prize_fixture(room)
+
+      conn =
+        conn
+        |> conn_as_admin(room)
+        |> put_session("locale", "pt_BR")
+
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      render_click(lv, "cancel_draw", %{})
+
+      {:ok, _participant} =
+        Rooms.reserve_prize_winner(prize.id, room.id, "admin@example.com", Ecto.UUID.generate())
+
+      render_click(lv, "draw_prize", %{"prize-id" => other_prize.id})
+      send(lv.pid, {:run_search, other_prize.id})
+
+      assert render(lv) =~
+               "Outro sorteio está aguardando a atribuição do prêmio ou o cancelamento"
+    end
+
     test "admin can confirm a restored reservation", %{conn: conn, room: room, prize: prize} do
       conn = conn_as_admin(conn, room)
       {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))

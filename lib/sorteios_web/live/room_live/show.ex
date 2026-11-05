@@ -447,7 +447,7 @@ defmodule SorteiosWeb.RoomLive.Show do
     do: gettext("This prize is currently reserved; try again later")
 
   defp draw_error_message(:draw_in_progress),
-    do: "Another draw is waiting to be assigned or cancelled"
+    do: gettext("Another draw is waiting to be assigned or cancelled")
 
   defp draw_error_message(:reservation_expired),
     do: gettext("The draw expired; please draw again")
