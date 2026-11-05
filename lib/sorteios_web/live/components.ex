@@ -25,10 +25,10 @@ defmodule SorteiosWeb.Components do
               <.link
                 href={Routes.session_path(SorteiosWeb.Endpoint, :delete)}
                 method="delete"
-                data-confirm="Are you sure? This cannot be undone"
+                data-confirm={gettext("Are you sure? This cannot be undone")}
                 class="mt-3 inline-flex w-full items-center justify-center rounded-md border border-white bg-indigo-600 px-4 py-2 font-medium text-white shadow-sm hover:bg-indigo-700 hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
               >
-                Logout
+                {gettext("Logout")}
               </.link>
             </div>
           </div>
@@ -71,7 +71,7 @@ defmodule SorteiosWeb.Components do
         />
         <h2 class="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">Sorteios</h2>
         <p class="mt-2 text-center text-sm text-gray-600">
-          Create or join a room
+          {gettext("Create or join a room")}
         </p>
       </div>
 
@@ -95,7 +95,7 @@ defmodule SorteiosWeb.Components do
             &copy; {DateTime.utc_now().year} Sorteios.
           </span>
           <span class="block sm:inline">
-            Made by <a
+            {gettext("Made by")} <a
               href="https://github.com/lubien"
               target="_blank"
               class="text-purple-500 hover:text-purple-700"
@@ -106,10 +106,10 @@ defmodule SorteiosWeb.Components do
               href="https://github.com/lubien/sorteios"
               target="_blank"
               class="text-purple-500 hover:text-purple-700"
-            >GitHub Repo</a>.
+            >{gettext("GitHub Repo")}</a>.
           </span>
           <span class="block sm:inline">
-            Region {System.get_env("FLY_REGION") || "local"}.
+            {gettext("Region %{region}.", region: System.get_env("FLY_REGION") || "local")}
           </span>
         </div>
       </div>

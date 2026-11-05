@@ -4,6 +4,7 @@ defmodule SorteiosWeb.Router do
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
+    plug SorteiosWeb.Plugs.SetLocale
     plug :fetch_live_flash
     plug :put_root_layout, {SorteiosWeb.LayoutView, :root}
     plug :protect_from_forgery

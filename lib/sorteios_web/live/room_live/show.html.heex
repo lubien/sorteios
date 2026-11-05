@@ -22,7 +22,7 @@
       <button
         phx-click="cancel_draw"
         class="absolute right-5 top-5 rounded-full p-2 text-indigo-300 hover:bg-indigo-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400"
-        aria-label="Cancel draw"
+        aria-label={gettext("Cancel draw")}
       >
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-6 w-6">
           <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
@@ -30,7 +30,7 @@
       </button>
     <% end %>
 
-    <p class="mb-1 text-xs font-semibold uppercase tracking-widest text-indigo-400">Drawing for</p>
+    <p class="mb-1 text-xs font-semibold uppercase tracking-widest text-indigo-400">{gettext("Drawing for")}</p>
     <h2 class="mb-8 text-center text-2xl font-bold text-white sm:text-3xl">
       {current_prize && current_prize.name}
     </h2>
@@ -78,7 +78,7 @@
           </g>
         </svg>
       </div>
-      <p class="mt-6 animate-pulse text-sm font-medium text-indigo-300">Drawing…</p>
+      <p class="mt-6 animate-pulse text-sm font-medium text-indigo-300">{gettext("Drawing…")}</p>
     <% else %>
       <div class="winner-enter flex flex-col items-center px-6 text-center">
         <div class="winner-glow mb-5 rounded-full">
@@ -97,19 +97,19 @@
               phx-value-prize-id={@drawing_prize_id}
               class="rounded-xl border-2 border-indigo-400 bg-transparent px-8 py-3 font-semibold text-indigo-200 hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-400"
             >
-              Re-draw
+              {gettext("Re-draw")}
             </button>
             <button
               phx-click="confirm_prize_winner"
               phx-value-prize-id={@drawing_prize_id}
-              data-confirm="Are you sure? This cannot be undone"
+              data-confirm={gettext("Are you sure? This cannot be undone")}
               class="rounded-xl border-2 border-transparent bg-indigo-500 px-8 py-3 font-semibold text-white hover:bg-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400"
             >
-              🎉 Assign prize
+              {gettext("🎉 Assign prize")}
             </button>
           </div>
         <% else %>
-          <p class="mt-6 text-sm text-indigo-400">Waiting for the admin to assign the prize…</p>
+          <p class="mt-6 text-sm text-indigo-400">{gettext("Waiting for the admin to assign the prize…")}</p>
         <% end %>
       </div>
     <% end %>
@@ -141,7 +141,7 @@
               <path d="M7 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM14.5 9a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM1.615 16.428a1.224 1.224 0 0 1-.569-1.175 6.002 6.002 0 0 1 11.908 0c.058.467-.172.92-.57 1.174A9.953 9.953 0 0 1 7 17a9.953 9.953 0 0 1-5.385-1.572ZM14.5 16h-.106c.07-.297.088-.611.048-.933a7.47 7.47 0 0 0-1.588-3.755 4.502 4.502 0 0 1 5.874 2.636.818.818 0 0 1-.36.98A7.465 7.465 0 0 1 14.5 16Z" />
             </svg>
             <span>{length(@users)}</span>
-            <span class="hidden text-indigo-200 sm:inline">participants</span>
+            <span class="hidden text-indigo-200 sm:inline">{gettext("participants")}</span>
           </div>
         </div>
 
@@ -149,10 +149,10 @@
         <.link
           href={Routes.session_path(@socket, :delete)}
           method="delete"
-          data-confirm="Are you sure? This cannot be undone"
+          data-confirm={gettext("Are you sure? This cannot be undone")}
           class="flex-shrink-0 rounded-md px-3 py-1.5 text-sm font-medium text-indigo-200 hover:bg-indigo-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-white"
         >
-          Logout
+          {gettext("Logout")}
         </.link>
       </div>
     </div>
@@ -170,7 +170,7 @@
 
             <%!-- Prize list header --%>
             <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3 sm:px-6">
-              <h2 class="text-base font-semibold text-gray-900">Prizes</h2>
+              <h2 class="text-base font-semibold text-gray-900">{gettext("Prizes")}</h2>
               <button
                 phx-click="quick_add_prize"
                 class="inline-flex items-center gap-1 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -178,7 +178,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
                   <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
                 </svg>
-                Add prize
+                {gettext("Add prize")}
               </button>
             </div>
 
@@ -188,7 +188,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="mx-auto mb-4 h-12 w-12 text-gray-300">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
                 </svg>
-                <p class="text-sm text-gray-500">No prizes yet — add one to get started.</p>
+                <p class="text-sm text-gray-500">{gettext("No prizes yet — add one to get started.")}</p>
               </div>
             <% end %>
 
@@ -256,7 +256,7 @@
                         </p>
                       <% end %>
                     <% else %>
-                      <p class="mt-0.5 text-xs text-gray-400">No winner yet</p>
+                      <p class="mt-0.5 text-xs text-gray-400">{gettext("No winner yet")}</p>
                     <% end %>
                   </div>
 
@@ -272,13 +272,13 @@
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-3.5 w-3.5">
                             <path d="M10 3.75a2 2 0 10-4 0 2 2 0 004 0zM17.25 4.5a.75.75 0 000-1.5h-5.5a.75.75 0 000 1.5h5.5zM5 3.75a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5a.75.75 0 01.75.75zM4.25 17a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5h1.5zM17.25 17a.75.75 0 000-1.5h-5.5a.75.75 0 000 1.5h5.5zM9 10a.75.75 0 01-.75.75h-5.5a.75.75 0 010-1.5h5.5A.75.75 0 019 10zM17.25 10.75a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5h1.5zM14 10a2 2 0 10-4 0 2 2 0 004 0zM10 16.25a2 2 0 10-4 0 2 2 0 004 0z" />
                           </svg>
-                          Draw
+                          {gettext("Draw")}
                         </button>
                       <% end %>
                       <button
                         phx-click="clone_prize"
                         phx-value-prize-id={prize.id}
-                        title="Clone prize"
+                        title={gettext("Clone prize")}
                         class="rounded-md p-1.5 text-gray-400 hover:bg-yellow-50 hover:text-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4">
@@ -288,8 +288,8 @@
                       <button
                         phx-click="remove_prize"
                         phx-value-prize-name={prize.name}
-                        data-confirm="Are you sure? This cannot be undone"
-                        title="Delete prize"
+                        data-confirm={gettext("Are you sure? This cannot be undone")}
+                        title={gettext("Delete prize")}
                         class="rounded-md p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-red-400"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4">
@@ -310,7 +310,7 @@
               class="flex w-full items-center justify-between px-4 py-3 text-left sm:px-6"
             >
               <span class="text-sm font-semibold text-gray-700">
-                Participants
+                {gettext("Participants")}
                 <span class="ml-2 inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
                   {length(@users)}
                 </span>
@@ -321,7 +321,7 @@
             </button>
             <div id="admin-participants-list" class="hidden border-t border-gray-100 px-4 py-3 sm:px-6">
               <%= if Enum.empty?(@users) do %>
-                <p class="py-4 text-center text-sm text-gray-400">No participants yet.</p>
+                <p class="py-4 text-center text-sm text-gray-400">{gettext("No participants yet.")}</p>
               <% else %>
                 <ul class="divide-y divide-gray-50">
                   <%= for user <- @users do %>
@@ -341,7 +341,7 @@
           <%!-- QR card --%>
           <div class="overflow-hidden rounded-xl bg-white shadow">
             <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-              <h3 class="text-sm font-semibold text-gray-900">Invite people</h3>
+              <h3 class="text-sm font-semibold text-gray-900">{gettext("Invite people")}</h3>
               <div class="flex items-center gap-1">
                 <%!-- Hide QR button --%>
                 <button
@@ -349,7 +349,7 @@
                   phx-click={JS.hide(to: "#qr-code-panel") |> JS.hide(to: "#qr-hide-btn") |> JS.show(to: "#qr-show-btn")}
                   class="rounded px-2 py-1 text-xs text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none"
                 >
-                  Hide QR
+                  {gettext("Hide QR")}
                 </button>
                 <%!-- Show QR button (initially hidden) --%>
                 <button
@@ -357,7 +357,7 @@
                   phx-click={JS.show(to: "#qr-code-panel") |> JS.show(to: "#qr-hide-btn") |> JS.hide(to: "#qr-show-btn")}
                   class="hidden rounded px-2 py-1 text-xs text-indigo-600 hover:bg-indigo-50 hover:text-indigo-800 focus:outline-none"
                 >
-                  Show QR
+                  {gettext("Show QR")}
                 </button>
               </div>
             </div>
@@ -366,7 +366,7 @@
             <div id="qr-code-panel" class="p-4">
               <a
                 href={Routes.export_path(@socket, :create_qr_code, @id)}
-                title="Download QR Code"
+                title={gettext("Download QR Code")}
                 class="block w-full [&>svg]:h-auto [&>svg]:w-full"
               >
                 {{:safe, @invite_image}}
@@ -395,7 +395,7 @@
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
                     <path fill-rule="evenodd" d="M13.887 3.182c.396.037.79.08 1.183.128C16.194 3.45 17 4.414 17 5.517V16.75A2.25 2.25 0 0 1 14.75 19h-9.5A2.25 2.25 0 0 1 3 16.75V5.517c0-1.103.806-2.068 1.93-2.207.393-.048.787-.09 1.183-.128A3.001 3.001 0 0 1 9 1h2c1.373 0 2.531.923 2.887 2.182ZM7.5 4A1.5 1.5 0 0 1 9 2.5h2A1.5 1.5 0 0 1 12.5 4v.5h-5V4Z" clip-rule="evenodd" />
                   </svg>
-                  Copy URL
+                  {gettext("Copy URL")}
                 </button>
                 <%!-- Download QR --%>
                 <.link
@@ -406,7 +406,7 @@
                     <path d="M10.75 2.75a.75.75 0 0 0-1.5 0v8.614L6.295 8.235a.75.75 0 1 0-1.09 1.03l4.25 4.5a.75.75 0 0 0 1.09 0l4.25-4.5a.75.75 0 0 0-1.09-1.03l-2.955 3.129V2.75Z" />
                     <path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z" />
                   </svg>
-                  Download QR
+                  {gettext("Download QR")}
                 </.link>
               </div>
             </div>
@@ -415,10 +415,10 @@
           <%!-- Participant count card (visible on lg+, count is also in header) --%>
           <div class="mt-4 hidden rounded-xl bg-white px-5 py-4 shadow lg:flex items-center justify-between">
             <div>
-              <p class="text-xs font-medium uppercase tracking-wider text-gray-400">In the room</p>
+              <p class="text-xs font-medium uppercase tracking-wider text-gray-400">{gettext("In the room")}</p>
               <p class="mt-0.5 text-4xl font-bold text-indigo-600">{length(@users)}</p>
               <p class="text-xs text-gray-400">
-                {if length(@users) == 1, do: "person", else: "people"}
+                {ngettext("person", "people", length(@users))}
               </p>
             </div>
             <div class="rounded-full bg-indigo-50 p-4">
@@ -437,7 +437,7 @@
         <%!-- Prizes card --%>
         <div class="overflow-hidden rounded-xl bg-white shadow">
           <div class="border-b border-gray-100 px-4 py-3 sm:px-6">
-            <h2 class="text-base font-semibold text-gray-900">🎁 Prizes</h2>
+            <h2 class="text-base font-semibold text-gray-900">{gettext("🎁 Prizes")}</h2>
           </div>
 
           <%= if Enum.empty?(@prizes) do %>
@@ -445,7 +445,7 @@
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="mx-auto mb-3 h-10 w-10 text-gray-300">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
               </svg>
-              <p class="text-sm text-gray-500">Waiting for prizes to be added…</p>
+              <p class="text-sm text-gray-500">{gettext("Waiting for prizes to be added…")}</p>
             </div>
           <% else %>
             <ul role="list" class="divide-y divide-gray-100">
@@ -469,12 +469,12 @@
                         <svg class="h-3.5 w-3.5 flex-shrink-0 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
                         </svg>
-                        Won by {prize.winner_name}
+                        {gettext("Won by %{name}", name: prize.winner_name)}
                       </p>
                     <% else %>
                       <p class="mt-0.5 flex items-center gap-1 text-xs text-indigo-500 font-medium">
                         <span class="inline-block h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
-                        Available
+                        {gettext("Available")}
                       </p>
                     <% end %>
                   </div>
@@ -491,7 +491,7 @@
             class="flex w-full items-center justify-between px-4 py-3 text-left sm:px-6"
           >
             <div class="flex items-center gap-2">
-              <span class="text-sm font-semibold text-gray-700">Other participants</span>
+              <span class="text-sm font-semibold text-gray-700">{gettext("Other participants")}</span>
               <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
                 {length(@users)}
               </span>
@@ -507,7 +507,7 @@
                   <img class="h-7 w-7 flex-shrink-0 rounded-full" src={gravatar(user.email)} alt="" />
                   <span class="truncate text-sm text-gray-700">{user.name}</span>
                   <%= if user.email == @current_user.email do %>
-                    <span class="ml-auto flex-shrink-0 rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-600">You</span>
+                    <span class="ml-auto flex-shrink-0 rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-600">{gettext("You")}</span>
                   <% end %>
                 </li>
               <% end %>
