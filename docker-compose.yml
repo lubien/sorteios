@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres:16-bookworm
+    environment:
+      POSTGRES_DB: sorteios_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d sorteios_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ecto://postgres:postgres@db/sorteios_dev
+      PHX_HOST: localhost
+      PHX_SERVER: "true"
+      PORT: ${PORT:-4000}
+      ECTO_IPV6: "false"
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:?set SECRET_KEY_BASE in .env}
+    ports:
+      - "${PORT:-4000}:${PORT:-4000}"
+    command: ["sh", "-c", "/app/bin/migrate && /app/bin/server"]

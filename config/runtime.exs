@@ -28,7 +28,8 @@ if config_env() == :prod do
       For example: ecto://USER:PASS@HOST/DATABASE
       """
 
-  maybe_ipv6 = if System.get_env("ECTO_IPV6"), do: [:inet6], else: []
+  maybe_ipv6 =
+    if System.get_env("ECTO_IPV6") in ["1", "true", "TRUE"], do: [:inet6], else: []
 
   config :sorteios, Sorteios.Repo,
     # ssl: true,
@@ -63,22 +64,20 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
-  app_name =
-    System.get_env("FLY_APP_NAME") ||
-      raise "FLY_APP_NAME not available"
-
-  config :libcluster,
-    debug: true,
-    topologies: [
-      fly6pn: [
-        strategy: Cluster.Strategy.DNSPoll,
-        config: [
-          polling_interval: 5_000,
-          query: "#{app_name}.internal",
-          node_basename: app_name
+  if app_name = System.get_env("FLY_APP_NAME") do
+    config :libcluster,
+      debug: true,
+      topologies: [
+        fly6pn: [
+          strategy: Cluster.Strategy.DNSPoll,
+          config: [
+            polling_interval: 5_000,
+            query: "#{app_name}.internal",
+            node_basename: app_name
+          ]
         ]
       ]
-    ]
+  end
 
   # ## Configuring the mailer
   #
