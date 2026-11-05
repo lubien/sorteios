@@ -1,0 +1,316 @@
+msgid ""
+msgstr ""
+"Language: pt_BR\n"
+
+#: lib/sorteios_web/live/room_live/show.ex:352
+#: lib/sorteios_web/live/room_live/show.ex:366
+#, elixir-autogen, elixir-format
+msgid "%{winner} won %{prize}"
+msgstr "%{winner} ganhou %{prize}"
+
+#: lib/sorteios_web/templates/session/new.html.heex:58
+#: lib/sorteios_web/templates/session/new.html.heex:58
+#, elixir-autogen, elixir-format
+msgid "*If you already have an invite"
+msgstr "*Se você já tem um convite"
+
+#: lib/sorteios_web/templates/session/new.html.heex:33
+#: lib/sorteios_web/templates/session/new.html.heex:33
+#, elixir-autogen, elixir-format
+msgid "*Room ID"
+msgstr "*ID da sala"
+
+#: lib/sorteios_web/live/room_live/show.html.heex:420
+#, elixir-autogen, elixir-format
+msgid "Add prize"
+msgstr "Adicionar prêmio"
+
+#: lib/sorteios_web/live/components.ex:28
+#: lib/sorteios_web/live/room_live/show.html.heex:336
+#: lib/sorteios_web/live/room_live/show.html.heex:388
+#: lib/sorteios_web/live/room_live/show.html.heex:589
+#, elixir-autogen, elixir-format
+msgid "Are you sure? This cannot be undone"
+msgstr "Tem certeza? Esta ação não pode ser desfeita"
+
+#: lib/sorteios_web/live/room_live/show.html.heex:864
+#, elixir-autogen, elixir-format
+msgid "Available"
+msgstr "Disponível"
+
+#: lib/sorteios_web/live/room_live/show.html.heex:57
+#, elixir-autogen, elixir-format
+msgid "Cancel draw"
+msgstr "Cancelar sorteio"
+
+#: lib/sorteios_web/live/room_live/show.html.heex:568
+#, elixir-autogen, elixir-format
+msgid "Clone prize"
+msgstr "Clonar prêmio"
+
+#: lib/sorteios_web/live/room_live/show.html.heex:742
+#, elixir-autogen, elixir-format
+msgid "Copy URL"
+msgstr "Copiar URL"
+
+#: lib/sorteios_web/templates/session/new.html.heex:50
+#: lib/sorteios_web/templates/session/new.html.heex:50
+#, elixir-autogen, elixir-format
+msgid "Create a room"
+msgstr "Criar uma sala"
+
+#: lib/sorteios_web/live/components.ex:74
+#, elixir-autogen, elixir-format
+msgid "Create or join a room"
+msgstr "Criar ou entrar em uma sala"
+
+#: lib/sorteios_web/live/room_live/show.html.heex:590
+#, elixir-autogen, elixir-format
+msgid "Delete prize"
+msgstr "Excluir prêmio"
+
+#: lib/sorteios_web/live/room_live/show.html.heex:758
+#, elixir-autogen, elixir-format
+msgid "Download QR"
+msgstr "Baixar QR"
+
+#: lib/sorteios_web/live/room_live/show.html.heex:704
+#, elixir-autogen, elixir-format
+msgid "Download QR Code"
+msgstr "Baixar código QR"
+
+#: lib/sorteios_web/live/room_live/show.html.heex:562
+#, elixir-autogen, elixir-format
+msgid "Draw"
+msgstr "Sortear"
+
+#: lib/sorteios_web/live/room_live/show.html.heex:71
+#, elixir-autogen, elixir-format
+msgid "Drawing for"
+msgstr "Sorteando"
+
+#: lib/sorteios_web/live/room_live/show.html.heex:312
+#, elixir-autogen, elixir-format
+msgid "Drawing…"
+msgstr "Sorteando…"
+
+#: lib/sorteios_web/templates/session/new.html.heex:22
+#: lib/sorteios_web/templates/session/new.html.heex:22
+#, elixir-autogen, elixir-format
+msgid "Email"
+msgstr "E-mail"
+
+#: lib/sorteios_web/templates/layout/live.html.heex:16
+#, elixir-autogen, elixir-format
+msgid "Error!"
+msgstr "Erro!"
+
+#: lib/sorteios_web/live/components.ex:109
+#, elixir-autogen, elixir-format
+msgid "GitHub Repo"
+msgstr "Repositório no GitHub"
+
+#: lib/sorteios_web/live/room_live/show.html.heex:683
+#, elixir-autogen, elixir-format
+msgid "Hide QR"
+msgstr "Ocultar QR"
+
+#: lib/sorteios_web/live/room_live/show.html.heex:768
+#, elixir-autogen, elixir-format
+msgid "In the room"
+msgstr "Na sala"
+
+#: lib/sorteios_web/templates/layout/live.html.heex:12
+#, elixir-autogen, elixir-format
+msgid "Information"
+msgstr "Informação"
+
+#: lib/sorteios_web/templates/session/new.html.heex:74
+#: lib/sorteios_web/templates/session/new.html.heex:74
+#, elixir-autogen, elixir-format
+msgid "Instant room"
+msgstr "Sala instantânea"
+
+#: lib/sorteios_web/live/room_live/show.html.heex:671
+#, elixir-autogen, elixir-format
+msgid "Invite people"
+msgstr "Convidar pessoas"
+
+#: lib/sorteios_web/templates/session/new.html.heex:44
+#: lib/sorteios_web/templates/session/new.html.heex:44
+#, elixir-autogen, elixir-format
+msgid "Join room"
+msgstr "Entrar na sala"
+
+#: lib/sorteios_web/live/components.ex:31
+#: lib/sorteios_web/live/room_live/show.html.heex:391
+#, elixir-autogen, elixir-format
+msgid "Logout"
+msgstr "Sair"
+
+#: lib/sorteios_web/live/components.ex:98
+#, elixir-autogen, elixir-format
+msgid "Made by"
+msgstr "Feito por"
+
+#: lib/sorteios_web/templates/session/new.html.heex:11
+#: lib/sorteios_web/templates/session/new.html.heex:11
+#, elixir-autogen, elixir-format
+msgid "Name"
+msgstr "Nome"
+
+#: lib/sorteios_web/live/room_live/show.html.heex:646
+#, elixir-autogen, elixir-format
+msgid "No participants yet."
+msgstr "Ainda não há participantes."
+
+#: lib/sorteios_web/live/room_live/show.ex:221
+#: lib/sorteios_web/live/room_live/show.ex:436
+#, elixir-autogen, elixir-format
+msgid "No prize or winner found"
+msgstr "Prêmio ou vencedor não encontrado"
+
+#: lib/sorteios_web/live/room_live/show.html.heex:442
+#, elixir-autogen, elixir-format
+msgid "No prizes yet — add one to get started."
+msgstr "Ainda não há prêmios — adicione um para começar."
+
+#: lib/sorteios_web/live/room_live/show.html.heex:541
+#, elixir-autogen, elixir-format
+msgid "No winner yet"
+msgstr "Ainda sem vencedor"
+
+#: lib/sorteios_web/templates/session/new.html.heex:6
+#: lib/sorteios_web/templates/session/new.html.heex:6
+#, elixir-autogen, elixir-format
+msgid "Oops, something went wrong! Please check the errors below."
+msgstr "Ops, algo deu errado! Verifique os erros abaixo."
+
+#: lib/sorteios_web/templates/session/new.html.heex:68
+#: lib/sorteios_web/templates/session/new.html.heex:68
+#, elixir-autogen, elixir-format
+msgid "Or create an instant room"
+msgstr "Ou crie uma sala instantânea"
+
+#: lib/sorteios_web/live/room_live/show.html.heex:882
+#, elixir-autogen, elixir-format
+msgid "Other participants"
+msgstr "Outros participantes"
+
+#: lib/sorteios_web/live/room_live/show.html.heex:622
+#, elixir-autogen, elixir-format
+msgid "Participants"
+msgstr "Participantes"
+
+#: lib/sorteios_web/live/room_live/show.ex:166
+#, elixir-autogen, elixir-format
+msgid "Prize cloned successfully"
+msgstr "Prêmio clonado com sucesso"
+
+#: lib/sorteios_web/live/room_live/show.ex:186
+#, elixir-autogen, elixir-format
+msgid "Prize removed successfully"
+msgstr "Prêmio removido com sucesso"
+
+#: lib/sorteios_web/live/room_live/show.html.heex:407
+#, elixir-autogen, elixir-format
+msgid "Prizes"
+msgstr "Prêmios"
+
+#: lib/sorteios_web/live/room_live/show.html.heex:331
+#, elixir-autogen, elixir-format
+msgid "Re-draw"
+msgstr "Sortear novamente"
+
+#: lib/sorteios_web/live/components.ex:112
+#, elixir-autogen, elixir-format
+msgid "Region %{region}."
+msgstr "Região %{region}."
+
+#: lib/sorteios_web/live/room_live/show.ex:36
+#, elixir-autogen, elixir-format
+msgid "Room %{id}"
+msgstr "Sala %{id}"
+
+#: lib/sorteios_web/live/room_live/show.ex:59
+#, elixir-autogen, elixir-format
+msgid "Room not found"
+msgstr "Sala não encontrada"
+
+#: lib/sorteios_web/live/room_live/show.html.heex:695
+#, elixir-autogen, elixir-format
+msgid "Show QR"
+msgstr "Mostrar QR"
+
+#: lib/sorteios_web/templates/layout/live.html.heex:8
+#, elixir-autogen, elixir-format
+msgid "Success!"
+msgstr "Sucesso!"
+
+#: lib/sorteios_web/live/room_live/show.html.heex:813
+#, elixir-autogen, elixir-format
+msgid "Waiting for prizes to be added…"
+msgstr "Aguardando a adição de prêmios…"
+
+#: lib/sorteios_web/live/room_live/show.html.heex:344
+#, elixir-autogen, elixir-format
+msgid "Waiting for the admin to assign the prize…"
+msgstr "Aguardando o administrador atribuir o prêmio…"
+
+#: lib/sorteios_web/live/room_live/show.html.heex:859
+#, elixir-autogen, elixir-format
+msgid "Won by %{name}"
+msgstr "Ganho por %{name}"
+
+#: lib/sorteios_web/live/room_live/show.html.heex:913
+#, elixir-autogen, elixir-format
+msgid "You"
+msgstr "Você"
+
+#: lib/sorteios_web/live/room_live/show.ex:69
+#, elixir-autogen, elixir-format
+msgid "You need to specify your name and email to enter"
+msgstr "Você precisa informar seu nome e e-mail para entrar"
+
+#: lib/sorteios_web/templates/layout/root.html.heex:12
+#, elixir-autogen, elixir-format
+msgid "Your own prize drawing app"
+msgstr "Seu próprio aplicativo de sorteios"
+
+#: lib/sorteios_web/live/room_live/show.html.heex:380
+#, elixir-autogen, elixir-format
+msgid "participants"
+msgstr "participantes"
+
+#: lib/sorteios_web/live/room_live/show.html.heex:772
+#, elixir-autogen, elixir-format
+msgid "person"
+msgid_plural "people"
+msgstr[0] "pessoa"
+msgstr[1] "pessoas"
+
+#: lib/sorteios_web/live/room_live/show.html.heex:794
+#, elixir-autogen, elixir-format
+msgid "🎁 Prizes"
+msgstr "🎁 Prêmios"
+
+#: lib/sorteios_web/live/room_live/show.html.heex:339
+#, elixir-autogen, elixir-format
+msgid "🎉 Assign prize"
+msgstr "🎉 Atribuir prêmio"
+
+#: lib/sorteios_web/live/room_live/show.ex:117
+#: lib/sorteios_web/live/room_live/show.ex:147
+#, elixir-autogen, elixir-format
+msgid "Prize created successfully"
+msgstr "Prêmio criado com sucesso"
+
+#: lib/sorteios_web/live/room_live/show.ex:434
+#, elixir-autogen, elixir-format
+msgid "The draw expired; please draw again"
+msgstr "O sorteio expirou; tente sortear novamente"
+
+#: lib/sorteios_web/live/room_live/show.ex:431
+#, elixir-autogen, elixir-format
+msgid "This prize is currently reserved; try again later"
+msgstr "Este prêmio está reservado; tente novamente mais tarde"

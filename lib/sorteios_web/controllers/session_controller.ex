@@ -68,9 +68,12 @@ defmodule SorteiosWeb.SessionController do
   end
 
   def delete(conn, _) do
+    locale = get_session(conn, "locale")
+
     conn
     |> configure_session(renew: true)
     |> clear_session()
+    |> put_session("locale", locale || "en")
     |> redirect(to: "/")
   end
 
