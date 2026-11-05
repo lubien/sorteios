@@ -103,7 +103,7 @@ defmodule Sorteios.RoomsTest do
   describe "prize winner reservations" do
     import Sorteios.RoomsFixtures
 
-    test "reserves different participants for different prizes in one room" do
+    test "only one prize per room can be reserved at a time" do
       room = room_fixture()
       first_prize = prize_fixture(room, %{name: "First Prize"})
       second_prize = prize_fixture(room, %{name: "Second Prize"})
@@ -129,6 +129,16 @@ defmodule Sorteios.RoomsTest do
                  "admin@example.com",
                  "first-token"
                )
+
+      assert {:error, :draw_in_progress} =
+               Rooms.reserve_prize_winner(
+                 second_prize.id,
+                 room.id,
+                 "admin@example.com",
+                 "second-token"
+               )
+
+      assert {:ok, _prize} = Rooms.confirm_prize_winner(first_prize.id, "first-token")
 
       assert {:ok, second_winner} =
                Rooms.reserve_prize_winner(
@@ -176,6 +186,36 @@ defmodule Sorteios.RoomsTest do
 
       assert {:error, :prize_unavailable} =
                Rooms.reserve_prize_winner(prize.id, room.id, "admin@example.com", "other-token")
+    end
+
+    test "another prize can be reserved once the active draw is cancelled or expires" do
+      room = room_fixture()
+      first_prize = prize_fixture(room, %{name: "First Prize"})
+      second_prize = prize_fixture(room, %{name: "Second Prize"})
+      third_prize = prize_fixture(room, %{name: "Third Prize"})
+
+      {:ok, _participant} =
+        Rooms.create_participant(%{
+          name: "Participant",
+          email: "participant@example.com",
+          room_id: room.id
+        })
+
+      assert {:ok, _winner} =
+               Rooms.reserve_prize_winner(first_prize.id, room.id, "admin@example.com", "first")
+
+      Rooms.clear_prize_winner_reservation(first_prize.id, "first")
+
+      assert {:ok, _winner} =
+               Rooms.reserve_prize_winner(second_prize.id, room.id, "admin@example.com", "second")
+
+      expired_at = DateTime.add(DateTime.utc_now(), -301, :second)
+
+      assert {:ok, _prize} =
+               Rooms.update_prize(Rooms.get_prize!(second_prize.id), %{reserved_at: expired_at})
+
+      assert {:ok, _winner} =
+               Rooms.reserve_prize_winner(third_prize.id, room.id, "admin@example.com", "third")
     end
 
     test "returns errors when the room or prize no longer exists" do

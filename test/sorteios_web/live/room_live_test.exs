@@ -1069,4 +1069,72 @@ defmodule SorteiosWeb.RoomLiveTest do
              )
     end
   end
+
+  describe "Show - restoring a reservation on mount" do
+    setup do
+      room = room_fixture()
+      prize = prize_fixture(room)
+
+      {:ok, _} =
+        Rooms.create_participant(%{
+          name: "Other Person",
+          email: "other@example.com",
+          room_id: room.id
+        })
+
+      token = Ecto.UUID.generate()
+
+      {:ok, _participant} =
+        Rooms.reserve_prize_winner(prize.id, room.id, "admin@example.com", token)
+
+      %{room: room, prize: prize}
+    end
+
+    test "admin sees the confirmation UI for an active reservation", %{
+      conn: conn,
+      room: room,
+      prize: prize
+    } do
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      assert lv |> element("div.winner-enter h3") |> render() =~ "Other Person"
+
+      assert has_element?(
+               lv,
+               "button[phx-click='confirm_prize_winner'][phx-value-prize-id='#{prize.id}']"
+             )
+    end
+
+    test "admin can confirm a restored reservation", %{conn: conn, room: room, prize: prize} do
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      lv
+      |> element("button[phx-click='confirm_prize_winner'][phx-value-prize-id='#{prize.id}']")
+      |> render_click()
+
+      prize = Rooms.get_prize!(prize.id)
+      assert prize.winner_email == "other@example.com"
+      assert is_nil(prize.reservation_token)
+    end
+
+    test "non-admin does not get the reservation restored", %{conn: conn, room: room} do
+      conn = conn_as_user(conn)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      refute has_element?(lv, "div.winner-enter")
+    end
+
+    test "an expired reservation is not restored", %{conn: conn, room: room, prize: prize} do
+      expired_at = DateTime.add(DateTime.utc_now(), -301, :second)
+      {:ok, _} = Rooms.update_prize(Rooms.get_prize!(prize.id), %{reserved_at: expired_at})
+
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      refute has_element?(lv, "div.winner-enter")
+      assert has_element?(lv, "button[phx-click='draw_prize'][phx-value-prize-id='#{prize.id}']")
+    end
+  end
 end

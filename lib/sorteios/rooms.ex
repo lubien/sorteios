@@ -219,18 +219,22 @@ defmodule Sorteios.Rooms do
         Repo.rollback(:prize_unavailable)
       end
 
+      # Only one draw per room may await confirmation at a time. The room lock
+      # above serializes reservations, so this check cannot race.
+      draw_in_progress? =
+        Repo.exists?(
+          from other in Prize,
+            where:
+              other.room_id == ^room_id and other.id != ^prize.id and
+                not is_nil(other.reserved_winner_email) and other.reserved_at > ^cutoff
+        )
+
+      if draw_in_progress?, do: Repo.rollback(:draw_in_progress)
+
       claimed_emails =
         from claimed in Prize,
           where: claimed.room_id == ^room_id and not is_nil(claimed.winner_email),
           select: claimed.winner_email
-
-      reserved_emails =
-        from reserved in Prize,
-          where:
-            reserved.room_id == ^room_id and
-              not is_nil(reserved.reserved_winner_email) and
-              reserved.reserved_at > ^cutoff,
-          select: reserved.reserved_winner_email
 
       candidates =
         Participant
@@ -238,8 +242,7 @@ defmodule Sorteios.Rooms do
           [participant],
           participant.room_id == ^room_id and
             participant.email != ^excluded_email and
-            participant.email not in subquery(claimed_emails) and
-            participant.email not in subquery(reserved_emails)
+            participant.email not in subquery(claimed_emails)
         )
         |> Repo.all()
 
@@ -296,6 +299,21 @@ defmodule Sorteios.Rooms do
         {:error, _changeset} -> Repo.rollback(:winner_conflict)
       end
     end)
+  end
+
+  def get_active_reservation(room_id) do
+    cutoff = DateTime.add(DateTime.utc_now(), -@reservation_ttl_seconds, :second)
+
+    Prize
+    |> where(
+      [prize],
+      prize.room_id == ^room_id and is_nil(prize.winner_email) and
+        not is_nil(prize.reserved_winner_email) and not is_nil(prize.reservation_token) and
+        prize.reserved_at > ^cutoff
+    )
+    |> order_by(desc: :reserved_at)
+    |> limit(1)
+    |> Repo.one()
   end
 
   def clear_prize_winner_reservation(nil, _reservation_token), do: :ok

@@ -50,7 +50,8 @@ defmodule SorteiosWeb.RoomLive.Show do
        socket
        |> assign(:changeset, Rooms.change_prize(%Prize{}))
        |> reload_users()
-       |> reload_prizes()}
+       |> reload_prizes()
+       |> restore_active_reservation()}
     else
       {:ok,
        socket
@@ -412,6 +413,23 @@ defmodule SorteiosWeb.RoomLive.Show do
       not is_nil(reservation_token)
   end
 
+  defp restore_active_reservation(%{assigns: %{admin?: true}} = socket) do
+    case Rooms.get_active_reservation(socket.assigns.id) do
+      nil ->
+        socket
+
+      prize ->
+        assign(socket,
+          drawing_prize_id: prize.id,
+          reservation_token: prize.reservation_token,
+          loading_winner?: false,
+          random_person: %{name: prize.reserved_winner_name, email: prize.reserved_winner_email}
+        )
+    end
+  end
+
+  defp restore_active_reservation(socket), do: socket
+
   defp clear_active_draw(socket) do
     assign(socket,
       drawing_prize_id: nil,
@@ -423,6 +441,9 @@ defmodule SorteiosWeb.RoomLive.Show do
 
   defp draw_error_message(:prize_unavailable),
     do: "This prize is currently reserved; try again later"
+
+  defp draw_error_message(:draw_in_progress),
+    do: "Another draw is waiting to be assigned or cancelled"
 
   defp draw_error_message(:reservation_expired),
     do: "The draw expired; please draw again"
