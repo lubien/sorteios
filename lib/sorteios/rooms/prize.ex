@@ -31,6 +31,5 @@ defmodule Sorteios.Rooms.Prize do
       :room_id
     ])
     |> validate_required([:name])
-    |> unique_constraint(:winner_email, name: :prizes_room_id_winner_email_unique)
   end
 end

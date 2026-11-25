@@ -187,6 +187,23 @@ defmodule SorteiosWeb.RoomLive.Show do
     end
   end
 
+  def handle_event("toggle_allow_multiple_prizes", _params, %{assigns: %{admin?: true}} = socket) do
+    room = Rooms.get_room!(socket.assigns.id)
+
+    case Rooms.update_room(room, %{allow_multiple_prizes: !room.allow_multiple_prizes}) do
+      {:ok, room} ->
+        PubSub.broadcast_from!(Sorteios.PubSub, self(), topic(socket), {:room_updated, room})
+        {:noreply, assign(socket, :room, room)}
+
+      {:error, _changeset} ->
+        {:noreply, put_flash(socket, :error, "Could not update room settings")}
+    end
+  end
+
+  def handle_event("toggle_allow_multiple_prizes", _params, socket) do
+    {:noreply, socket}
+  end
+
   def handle_event("draw_prize", %{"prize-id" => prize_id}, socket) do
     Rooms.clear_prize_winner_reservation(
       socket.assigns.drawing_prize_id,
@@ -362,6 +379,10 @@ defmodule SorteiosWeb.RoomLive.Show do
      )}
   end
 
+  def handle_info({:room_updated, %Room{} = room}, socket) do
+    {:noreply, assign(socket, :room, room)}
+  end
+
   def handle_info("reload_prizes", socket) do
     {:noreply, reload_prizes(socket)}
   end
@@ -447,6 +468,12 @@ defmodule SorteiosWeb.RoomLive.Show do
 
   defp draw_error_message(:reservation_expired),
     do: "The draw expired; please draw again"
+
+  defp draw_error_message(:winner_conflict),
+    do: "This person already won a prize in this room; please draw again"
+
+  defp draw_error_message(:no_eligible_participant),
+    do: "There is no one left who can win this prize"
 
   defp draw_error_message(_reason), do: "No prize or winner found"
 
