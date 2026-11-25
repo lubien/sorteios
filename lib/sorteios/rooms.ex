@@ -186,9 +186,9 @@ defmodule Sorteios.Rooms do
 
   def reserve_prize_winner(prize_id, room_id, excluded_email, reservation_token) do
     Repo.transaction(fn ->
-      if is_nil(Repo.one(from room in Room, where: room.id == ^room_id, lock: "FOR UPDATE")) do
-        Repo.rollback(:room_not_found)
-      end
+      room = Repo.one(from room in Room, where: room.id == ^room_id, lock: "FOR UPDATE")
+
+      if is_nil(room), do: Repo.rollback(:room_not_found)
 
       prize =
         Repo.one(
@@ -231,19 +231,13 @@ defmodule Sorteios.Rooms do
 
       if draw_in_progress?, do: Repo.rollback(:draw_in_progress)
 
-      claimed_emails =
-        from claimed in Prize,
-          where: claimed.room_id == ^room_id and not is_nil(claimed.winner_email),
-          select: claimed.winner_email
-
       candidates =
         Participant
         |> where(
           [participant],
-          participant.room_id == ^room_id and
-            participant.email != ^excluded_email and
-            participant.email not in subquery(claimed_emails)
+          participant.room_id == ^room_id and participant.email != ^excluded_email
         )
+        |> exclude_previous_winners(room)
         |> Repo.all()
 
       if candidates == [], do: Repo.rollback(:no_eligible_participant)
@@ -265,6 +259,17 @@ defmodule Sorteios.Rooms do
 
   def confirm_prize_winner(prize_id, reservation_token) do
     Repo.transaction(fn ->
+      room_id = Repo.one(from prize in Prize, where: prize.id == ^prize_id, select: prize.room_id)
+
+      if is_nil(room_id), do: Repo.rollback(:prize_not_found)
+
+      # Lock the room before the prize, in the same order as
+      # reserve_prize_winner/4, so all winner changes in a room are serialized
+      # and the one-prize-per-person check below cannot race.
+      room = Repo.one(from room in Room, where: room.id == ^room_id, lock: "FOR UPDATE")
+
+      if is_nil(room), do: Repo.rollback(:room_not_found)
+
       prize =
         Repo.one(from prize in Prize, where: prize.id == ^prize_id, lock: "FOR UPDATE")
 
@@ -284,6 +289,16 @@ defmodule Sorteios.Rooms do
         Repo.rollback(:reservation_expired)
       end
 
+      if not room.allow_multiple_prizes and
+           Repo.exists?(
+             from other in Prize,
+               where:
+                 other.room_id == ^room.id and other.id != ^prize.id and
+                   other.winner_email == ^prize.reserved_winner_email
+           ) do
+        Repo.rollback(:winner_conflict)
+      end
+
       changeset =
         Prize.changeset(prize, %{
           winner_name: prize.reserved_winner_name,
@@ -299,6 +314,17 @@ defmodule Sorteios.Rooms do
         {:error, _changeset} -> Repo.rollback(:winner_conflict)
       end
     end)
+  end
+
+  defp exclude_previous_winners(query, %Room{allow_multiple_prizes: true}), do: query
+
+  defp exclude_previous_winners(query, %Room{id: room_id}) do
+    claimed_emails =
+      from claimed in Prize,
+        where: claimed.room_id == ^room_id and not is_nil(claimed.winner_email),
+        select: claimed.winner_email
+
+    where(query, [participant], participant.email not in subquery(claimed_emails))
   end
 
   def get_active_reservation(room_id) do

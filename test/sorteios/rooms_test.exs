@@ -258,24 +258,72 @@ defmodule Sorteios.RoomsTest do
       assert is_nil(Rooms.get_prize!(prize.id).winner_email)
     end
 
-    test "returns a changeset error when a winner already won in the room" do
+    test "rooms do not allow multiple prizes per person by default" do
+      assert room_fixture().allow_multiple_prizes == false
+    end
+
+    test "a previous winner is not drawn again when multiple prizes are not allowed" do
       room = room_fixture()
-      first_prize = prize_fixture(room)
-      second_prize = prize_fixture(room)
+      first_prize = prize_fixture(room, %{name: "First Prize"})
+      second_prize = prize_fixture(room, %{name: "Second Prize"})
+      participant = participant_in_room(room)
 
-      assert {:ok, _first_prize} =
-               Rooms.update_prize(first_prize, %{
-                 winner_name: "Winner",
-                 winner_email: "winner@example.com"
-               })
+      assert {:ok, ^participant} =
+               Rooms.reserve_prize_winner(first_prize.id, room.id, "admin@example.com", "first")
 
-      assert {:error, changeset} =
-               Rooms.update_prize(second_prize, %{
-                 winner_name: "Winner",
-                 winner_email: "winner@example.com"
-               })
+      assert {:ok, _prize} = Rooms.confirm_prize_winner(first_prize.id, "first")
 
-      assert changeset.errors[:winner_email]
+      assert {:error, :no_eligible_participant} =
+               Rooms.reserve_prize_winner(second_prize.id, room.id, "admin@example.com", "second")
+    end
+
+    test "a previous winner can be drawn again when multiple prizes are allowed" do
+      room = room_fixture(%{allow_multiple_prizes: true})
+      first_prize = prize_fixture(room, %{name: "First Prize"})
+      second_prize = prize_fixture(room, %{name: "Second Prize"})
+      participant = participant_in_room(room)
+
+      assert {:ok, ^participant} =
+               Rooms.reserve_prize_winner(first_prize.id, room.id, "admin@example.com", "first")
+
+      assert {:ok, _prize} = Rooms.confirm_prize_winner(first_prize.id, "first")
+
+      assert {:ok, ^participant} =
+               Rooms.reserve_prize_winner(second_prize.id, room.id, "admin@example.com", "second")
+
+      assert {:ok, prize} = Rooms.confirm_prize_winner(second_prize.id, "second")
+      assert prize.winner_email == participant.email
+    end
+
+    test "confirming fails if the setting was turned off after a repeat winner was drawn" do
+      room = room_fixture(%{allow_multiple_prizes: true})
+      first_prize = prize_fixture(room, %{name: "First Prize"})
+      second_prize = prize_fixture(room, %{name: "Second Prize"})
+      _participant = participant_in_room(room)
+
+      assert {:ok, _} =
+               Rooms.reserve_prize_winner(first_prize.id, room.id, "admin@example.com", "first")
+
+      assert {:ok, _prize} = Rooms.confirm_prize_winner(first_prize.id, "first")
+
+      assert {:ok, _} =
+               Rooms.reserve_prize_winner(second_prize.id, room.id, "admin@example.com", "second")
+
+      assert {:ok, _room} = Rooms.update_room(room, %{allow_multiple_prizes: false})
+
+      assert {:error, :winner_conflict} = Rooms.confirm_prize_winner(second_prize.id, "second")
+      assert is_nil(Rooms.get_prize!(second_prize.id).winner_email)
+    end
+
+    defp participant_in_room(room) do
+      {:ok, participant} =
+        Rooms.create_participant(%{
+          name: "Participant",
+          email: "participant@example.com",
+          room_id: room.id
+        })
+
+      participant
     end
   end
 end

@@ -1137,4 +1137,66 @@ defmodule SorteiosWeb.RoomLiveTest do
       assert has_element?(lv, "button[phx-click='draw_prize'][phx-value-prize-id='#{prize.id}']")
     end
   end
+
+  # ---------------------------------------------------------------------------
+  # Room settings
+  # ---------------------------------------------------------------------------
+
+  describe "Show - allow multiple prizes setting" do
+    setup do
+      %{room: room_fixture()}
+    end
+
+    test "admin sees the toggle, off by default", %{conn: conn, room: room} do
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      assert has_element?(lv, "#allow-multiple-prizes-toggle[aria-checked='false']")
+    end
+
+    test "non-admin does not see the toggle", %{conn: conn, room: room} do
+      conn = conn_as_user(conn)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      refute has_element?(lv, "#allow-multiple-prizes-toggle")
+    end
+
+    test "admin can turn the setting on and off", %{conn: conn, room: room} do
+      conn = conn_as_admin(conn, room)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      lv |> element("#allow-multiple-prizes-toggle") |> render_click()
+      assert has_element?(lv, "#allow-multiple-prizes-toggle[aria-checked='true']")
+      assert Rooms.get_room!(room.id).allow_multiple_prizes
+
+      lv |> element("#allow-multiple-prizes-toggle") |> render_click()
+      assert has_element?(lv, "#allow-multiple-prizes-toggle[aria-checked='false']")
+      refute Rooms.get_room!(room.id).allow_multiple_prizes
+    end
+
+    test "non-admin cannot change the setting", %{conn: conn, room: room} do
+      conn = conn_as_user(conn)
+      {:ok, lv, _html} = live(conn, Routes.room_show_path(conn, :show, room))
+
+      render_click(lv, "toggle_allow_multiple_prizes", %{})
+      refute Rooms.get_room!(room.id).allow_multiple_prizes
+    end
+
+    test "other admin sessions see the change", %{conn: conn, room: room} do
+      {:ok, lv1, _html} =
+        live(conn_as_admin(conn, room), Routes.room_show_path(conn, :show, room))
+
+      other_admin =
+        init_test_session(conn, %{
+          "name" => "Other Admin",
+          "email" => "other-admin@example.com",
+          "admin:#{room.id}" => room.id
+        })
+
+      {:ok, lv2, _html} = live(other_admin, Routes.room_show_path(conn, :show, room))
+
+      lv1 |> element("#allow-multiple-prizes-toggle") |> render_click()
+      assert has_element?(lv2, "#allow-multiple-prizes-toggle[aria-checked='true']")
+    end
+  end
 end
