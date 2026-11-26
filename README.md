@@ -18,6 +18,13 @@ To start your Phoenix server:
 
 Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
+To test the production release locally with Docker and PostgreSQL, run
+`cp .env.example .env` and then `docker compose up --build`. The application is
+available at [`localhost:4000`](http://localhost:4000). Set `PORT` to use a
+different port, for example `PORT=8080 docker compose up --build`. The secret
+in `.env.example` is for local development only; use a separate secret for
+deployed environments.
+
 Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
 
 ## Learn more

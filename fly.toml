@@ -11,6 +11,8 @@ processes = []
 [env]
   PHX_HOST = "sorteios.lubien.dev"
   PORT = "8080"
+  ECTO_IPV6 = "true"
+  ERL_AFLAGS = "-proto_dist inet6_tcp"
 
 [experimental]
   allowed_public_ports = []
